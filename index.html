@@ -2011,6 +2011,9 @@ async function toggleRecord() {
     liveTranscript = '';
     segments = [];
     window._segments = [];
+    // Clear live transcript panel
+    const transcriptBody = document.getElementById('transcript-body');
+    if (transcriptBody) transcriptBody.innerHTML = '';
 
     const started = await startWhisperRecording();
     if (!started) return;
@@ -2064,6 +2067,7 @@ async function processTranscript(transcript) {
     if (!transcript) throw new Error('No speech was detected. Please speak clearly and try again.');
 
     // Step 1: Context-aware transcript correction
+    const fullNotes = getPlanLimits().fullNotes;
     const notesRes = await fetch('http://localhost:3000/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
