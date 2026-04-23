@@ -1,0 +1,3007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prod.ai</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #181818;
+    --bg4: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f5f5f5;
+    --text2: #999999;
+    --text3: #555555;
+    --accent: #f07060;
+    --accent2: #e05540;
+    --accent-glow: rgba(240,112,96,0.15);
+    --green: #2dce89;
+    --green-dim: rgba(45,206,137,0.12);
+    --red: #f07060;
+    --red-dim: rgba(240,112,96,0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --blue: #f07060;
+    --blue-dim: rgba(240,112,96,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: radial-gradient(ellipse at 20% 20%, rgba(240,112,96,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(240,112,96,0.04) 0%, transparent 50%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #111111;
+    border-right: 1px solid rgba(240,112,96,0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #f07060, #e05540);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 16px rgba(240,112,96,0.4);
+  }
+  .logo-icon svg { width: 17px; height: 17px; }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+  .logo-text span { color: var(--accent); }
+
+  .nav { padding: 12px 10px; flex: 1; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 0 10px;
+    margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(240,112,96,0.2), rgba(240,112,96,0.08));
+    color: var(--accent);
+    border-color: rgba(240,112,96,0.3);
+  }
+  .nav-item svg { width: 15px; height: 15px; opacity: 0.8; flex-shrink: 0; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-subject {
+    margin: 2px 0;
+  }
+  .nav-subject-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .nav-subject-header:hover { background: var(--bg3); color: var(--text); }
+  .nav-subject-header .chevron { width: 10px; height: 10px; margin-left: auto; transition: transform 0.2s; flex-shrink: 0; }
+  .nav-subject-header.open .chevron { transform: rotate(90deg); }
+  .nav-subject-sessions { padding-left: 28px; display: none; }
+  .nav-subject-sessions.open { display: block; }
+  .nav-session-item {
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-left: 1px solid var(--border);
+    margin: 1px 0;
+  }
+  .nav-session-item:hover { color: var(--text); background: var(--bg3); }
+
+  .sidebar-bottom {
+    padding: 12px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-chip:hover { background: var(--bg3); }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #f07060, #e05540);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white; flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .user-plan { font-size: 11px; color: var(--text3); }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .topbar {
+    padding: 16px 28px;
+    border-bottom: 1px solid rgba(240,112,96,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg);
+  }
+  .topbar-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .topbar-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+  .btn-accent {
+    background: linear-gradient(135deg, #f07060, #f07060);
+    color: white;
+    box-shadow: 0 2px 12px rgba(240,112,96,0.35);
+  }
+  .btn-accent:hover { background: linear-gradient(135deg, #f07060, #f07060); box-shadow: 0 4px 16px rgba(240,112,96,0.5); }
+
+  .content { padding: 28px; flex: 1; overflow-y: auto; }
+
+  /* RECORD PANEL */
+  .record-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .record-panel::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(240,112,96,0.18) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .record-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(240,112,96,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .record-tabs {
+    display: flex; gap: 4px;
+    background: var(--bg3);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+  .record-tab {
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .record-tab svg { width: 13px; height: 13px; }
+  .record-tab.active {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* IN-PERSON RECORDING */
+  .inperson-area { display: flex; align-items: center; gap: 28px; }
+  .record-btn-wrap { position: relative; flex-shrink: 0; }
+  .record-ring {
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 2px solid var(--red);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s;
+  }
+  .record-ring.active {
+    opacity: 0.6;
+    animation: ring-pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255,77,109,0.4);
+  }
+  @keyframes ring-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 0.15; }
+  }
+  .record-btn-main {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #111111, #141424);
+    border: 2px solid rgba(248,113,113,0.3);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 0 rgba(248,113,113,0);
+  }
+  .record-btn-main:hover {
+    border-color: var(--red);
+    background: var(--red-dim);
+    box-shadow: 0 0 20px rgba(248,113,113,0.2);
+  }
+  .record-btn-main.recording {
+    background: var(--red-dim);
+    border-color: var(--red);
+    box-shadow: 0 0 24px rgba(248,113,113,0.3);
+  }
+  .record-btn-main svg { width: 26px; height: 26px; transition: all 0.2s; }
+
+  .record-info { flex: 1; }
+  .record-status {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .record-sub { font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+  .record-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .meta-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .meta-chip svg { width: 12px; height: 12px; }
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--red);
+  }
+
+  /* LIVE WAVEFORM */
+  .waveform {
+    display: flex; align-items: center; gap: 3px;
+    height: 32px;
+    margin-top: 16px;
+  }
+  .wave-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--pink), var(--accent));
+    opacity: 0.4;
+    transition: height 0.1s;
+  }
+  .wave-bar.active { opacity: 0.8; animation: wave var(--d, 0.8s) ease-in-out infinite alternate; }
+  @keyframes wave { from { height: 4px; } to { height: var(--h, 20px); } }
+
+  /* ONLINE MEETING SECTION */
+  .meeting-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .meeting-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .meeting-card:hover { border-color: var(--border2); background: var(--bg4); }
+  .meeting-card.connected { border-color: rgba(45,206,137,0.3); }
+  .meeting-logo { font-size: 24px; margin-bottom: 8px; }
+  .meeting-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .meeting-status { font-size: 11px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .status-dot.connected { background: var(--green); }
+  .status-dot.disconnected { background: var(--text3); }
+
+  .auto-record-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .toggle-left { display: flex; align-items: center; gap: 10px; }
+  .toggle-icon {
+    width: 34px; height: 34px;
+    background: var(--accent-glow);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .toggle-icon svg { width: 16px; height: 16px; color: var(--accent); }
+  .toggle-label { font-size: 14px; font-weight: 500; }
+  .toggle-sub { font-size: 12px; color: var(--text2); }
+  .switch {
+    width: 42px; height: 24px;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s;
+  }
+  .switch.on .switch-thumb { transform: translateX(18px); }
+
+  /* SESSIONS LIST */
+  .sessions-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .sessions-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+  }
+  .session-list { display: flex; flex-direction: column; gap: 8px; }
+  .session-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .session-item:hover { border-color: rgba(240,112,96,0.3); background: var(--bg3); box-shadow: 0 0 0 1px rgba(240,112,96,0.1); }
+  .session-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .session-icon.inperson { background: var(--red-dim); }
+  .session-icon.online { background: rgba(45,206,137,0.1); }
+  .session-body { flex: 1; min-width: 0; }
+  .session-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .session-meta { font-size: 12px; color: var(--text2); display: flex; gap: 10px; }
+  .session-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .tag {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-purple { background: rgba(240,112,96,0.2); color: var(--accent); border: 1px solid rgba(240,112,96,0.25); }
+  .tag-green { background: rgba(0,229,160,0.15); color: var(--green); border: 1px solid rgba(0,229,160,0.25); }
+
+  /* SPEAKER BADGE */
+  .speaker-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px;
+    background: var(--amber-dim);
+    border: 1px solid rgba(255,140,66,0.25);
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--amber);
+  }
+  .speaker-badge svg { width: 10px; height: 10px; }
+
+  /* NOTES PREVIEW */
+  .notes-preview {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .notes-preview h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+  }
+  .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.3; }
+  .empty-state p { font-size: 14px; }
+
+  .pmenu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .pmenu-item:hover { background: var(--bg4); color: var(--text); }
+  .pmenu-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+  /* PAGE VIEWS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* LIVE TRANSCRIPT PANEL */
+  .live-transcript {
+    background: var(--bg3);
+    border: 1px solid rgba(245,54,92,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .transcript-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .live-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: var(--red);
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: blink 1s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255,77,109,0.6);
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .transcript-body { font-size: 13px; line-height: 1.7; color: var(--text2); }
+  .transcript-speaker { color: var(--amber); font-weight: 500; }
+  .transcript-line { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <img src="logo.png" style="width:32px;height:32px;border-radius:9px;object-fit:cover;flex-shrink:0;">
+    <span class="logo-text">Prod<span style="color:var(--accent);">.ai</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-item active" onclick="showPage('record')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+        Record
+      </div>
+      <div class="nav-item" onclick="showPage('notes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        Notes
+      </div>
+      <div class="nav-item" onclick="showPage('subjects')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Subjects
+      </div>
+      <div class="nav-item" onclick="showPage('sessions')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        History
+      </div>
+    </div>
+
+    <!-- Sessions grouped by subject — rendered dynamically -->
+    <div class="nav-section" id="nav-sessions-tree">
+      <p class="nav-label">Recent</p>
+      <p style="font-size:12px;color:var(--text3);padding:4px 10px;">No recordings yet</p>
+    </div>
+  </nav>
+
+  <div class="sidebar-bottom" style="position:relative;">
+    <div class="user-chip" onclick="toggleProfileMenu(event)">
+      <div class="avatar">J</div>
+      <div class="user-info">
+        <p class="user-name">Jayan</p>
+        <p class="user-plan">Free plan</p>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--text3);flex-shrink:0;margin-left:auto;"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div id="profile-menu" style="display:none;position:absolute;bottom:56px;left:10px;right:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:100;box-shadow:0 -8px 24px rgba(0,0,0,0.4);">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <div class="avatar" style="width:32px;height:32px;font-size:12px;">J</div>
+        <div><p style="font-size:13px;font-weight:500;">Jayan</p><p style="font-size:11px;color:var(--text3);">Free plan</p></div>
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu();showPage('profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account settings
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu();showPage('upgrade')" style="color:var(--accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Upgrade plan
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu();showPage('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help center
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact support
+      </div>
+      <div class="pmenu-item" style="color:var(--red);border-top:1px solid var(--border);" onclick="closeProfileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log out
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="topbar">
+    <h1 class="topbar-title" id="page-title">Record</h1>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="showPage('settings')">Settings</button>
+      <button class="btn btn-accent" onclick="showPage('upgrade')">Upgrade</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- RECORD PAGE -->
+    <div class="page active" id="page-record">
+
+      <div class="record-panel">
+        <div class="record-tabs">
+          <button class="record-tab active" id="tab-inperson" onclick="switchRecordTab('inperson')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            In-Person
+          </button>
+          <button class="record-tab" id="tab-online" onclick="switchRecordTab('online')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.723v6.554a1 1 0 0 1-1.447.894L15 14"/><rect x="3" y="8" width="12" height="8" rx="2"/></svg>
+            Online Meeting
+          </button>
+        </div>
+
+        <!-- IN-PERSON TAB -->
+        <div id="inperson-tab">
+
+          <!-- Recording mode -->
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <div id="mode-normal" onclick="setRecordMode('normal')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-glow);cursor:pointer;text-align:center;transition:all 0.15s;">
+              <p style="font-size:13px;font-weight:600;color:var(--accent);">Normal</p>
+              <p style="font-size:11px;color:var(--text3);margin-top:2px;">Next to speaker</p>
+            </div>
+            <div id="mode-distant" onclick="setRecordMode('distant')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;cursor:pointer;text-align:center;transition:all 0.15s;">
+              <p style="font-size:13px;font-weight:600;color:var(--text2);">Distant</p>
+              <p style="font-size:11px;color:var(--text3);margin-top:2px;">5–15 ft away</p>
+            </div>
+            <div id="mode-lecture-hall" onclick="setRecordMode('lecture-hall')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;cursor:pointer;text-align:center;transition:all 0.15s;">
+              <p style="font-size:13px;font-weight:600;color:var(--text2);">Lecture Hall</p>
+              <p style="font-size:11px;color:var(--text3);margin-top:2px;">Large room</p>
+            </div>
+          </div>
+
+          <!-- Language settings inline -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.06em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Spoken language</p>
+              <select id="record-spoken-lang" onchange="onRecordLangChange()" style="width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+                <option value="en-US">🇺🇸 English (US)</option>
+                <option value="en-GB">🇬🇧 English (UK)</option>
+                <option value="es-ES">🇪🇸 Spanish</option>
+                <option value="fr-FR">🇫🇷 French</option>
+                <option value="de-DE">🇩🇪 German</option>
+                <option value="it-IT">🇮🇹 Italian</option>
+                <option value="pt-BR">🇧🇷 Portuguese</option>
+                <option value="zh-CN">🇨🇳 Mandarin</option>
+                <option value="ja-JP">🇯🇵 Japanese</option>
+                <option value="ko-KR">🇰🇷 Korean</option>
+                <option value="ar-SA">🇸🇦 Arabic</option>
+                <option value="hi-IN">🇮🇳 Hindi</option>
+                <option value="ru-RU">🇷🇺 Russian</option>
+              </select>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.06em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Notes in</p>
+              <select id="record-output-lang" onchange="onRecordLangChange()" style="width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Italian">Italian</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Mandarin Chinese">Mandarin Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Russian">Russian</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inperson-area">
+            <div class="record-btn-wrap">
+              <div class="record-ring" id="record-ring"></div>
+              <div class="record-btn-main" id="record-btn" onclick="toggleRecord()">
+                <svg id="mic-icon" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <svg id="stop-icon" style="display:none" viewBox="0 0 24 24" fill="var(--red)" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              </div>
+            </div>
+            <div class="record-info">
+              <p class="record-status" id="record-status">Ready to record</p>
+              <p class="record-sub" id="record-sub">Tap the mic to start capturing your lecture</p>
+              <div id="usage-badge" style="display:none;margin-top:6px;font-size:11px;padding:3px 10px;background:var(--amber-dim);color:var(--amber);border-radius:99px;border:1px solid rgba(251,191,36,0.2);width:fit-content;"></div>
+              <div class="record-meta">
+                <div class="meta-chip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <span class="timer" id="timer">00:00</span>
+                </div>
+                <div class="meta-chip" id="speaker-chip" style="display:none">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span style="color:var(--amber);font-size:12px">Lecturer detected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="waveform" id="waveform">
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+          </div>
+
+          <div class="live-transcript" id="live-transcript" style="display:none">
+            <div class="transcript-header">
+              <span class="live-label"><span class="live-dot"></span>Live transcript</span>
+              <span style="font-size:11px;color:var(--text3)">Auto-detecting speakers...</span>
+            </div>
+            <div class="transcript-body" id="transcript-body">
+              <div class="transcript-line"><span class="transcript-speaker">Prof. Chen · </span>Today we're going to continue with Chapter 4, covering the cell cycle and mitosis...</div>
+              <div class="transcript-line" style="color:var(--text3)">Student · Can you go over the G1 checkpoint again?</div>
+              <div class="transcript-line"><span class="transcript-speaker">Prof. Chen · </span>Good question. The G1 checkpoint is where the cell assesses whether conditions are right to proceed...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ONLINE MEETING TAB -->
+        <div id="online-tab" style="display:none">
+
+          <!-- Step 1: Capture method -->
+          <div style="margin-bottom:16px;">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;">Capture method</p>
+            <div style="display:flex;gap:8px;">
+              <div id="capture-tab" onclick="setCaptureMethod('tab')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-glow);cursor:pointer;text-align:center;transition:all 0.15s;">
+                <p style="font-size:13px;font-weight:600;color:var(--accent);">Tab capture</p>
+                <p style="font-size:11px;color:var(--text3);margin-top:2px;">Works with any platform</p>
+              </div>
+              <div id="capture-integration" onclick="setCaptureMethod('integration')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;cursor:pointer;text-align:center;transition:all 0.15s;position:relative;">
+                <p style="font-size:13px;font-weight:600;color:var(--text2);">Direct integration</p>
+                <p style="font-size:11px;color:var(--text3);margin-top:2px;">Auto-joins your calls</p>
+                <span style="position:absolute;top:-8px;right:8px;font-size:9px;padding:2px 6px;background:var(--accent-glow);color:var(--accent);border-radius:99px;font-weight:600;">COMING SOON</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab capture instructions -->
+          <div id="tab-capture-section">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+              <p style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px;">How to record your meeting:</p>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">1</span>
+                  <p style="font-size:13px;color:var(--text2);">Join your Zoom, Meet, or Teams call in another tab</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">2</span>
+                  <p style="font-size:13px;color:var(--text2);">Click <strong style="color:var(--text);">Start capturing</strong> below — Chrome will ask you to share a tab</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">3</span>
+                  <p style="font-size:13px;color:var(--text2);">Select your meeting tab and make sure <strong style="color:var(--text);">Share tab audio</strong> is checked</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">4</span>
+                  <p style="font-size:13px;color:var(--text2);">AURA transcribes everything in real time — stop when done</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Capture button -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <div class="record-btn-wrap" style="flex-shrink:0;">
+                <div class="record-ring" id="online-record-ring"></div>
+                <div class="record-btn-main" id="online-record-btn" onclick="toggleOnlineRecord()" style="width:56px;height:56px;">
+                  <svg id="online-play-icon" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.723v6.554a1 1 0 0 1-1.447.894L15 14"/><rect x="3" y="8" width="12" height="8" rx="2"/></svg>
+                  <svg id="online-stop-icon" style="display:none" viewBox="0 0 24 24" fill="var(--red)" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                </div>
+              </div>
+              <div>
+                <p style="font-size:14px;font-weight:500;" id="online-status">Ready to capture</p>
+                <p style="font-size:12px;color:var(--text2);" id="online-sub">Click to share your meeting tab</p>
+              </div>
+              <span class="timer" id="online-timer" style="display:none;margin-left:auto;">00:00</span>
+            </div>
+
+            <!-- Live transcript for online -->
+            <div class="live-transcript" id="online-live-transcript" style="display:none;">
+              <div class="transcript-header">
+                <span class="live-label"><span class="live-dot"></span>Live transcript</span>
+                <span style="font-size:11px;color:var(--text3);">Detecting speakers...</span>
+              </div>
+              <div class="transcript-body" id="online-transcript-body">
+                <span style="color:var(--text3);font-style:italic;font-size:13px;">Listening to meeting audio...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direct integration section (coming soon) -->
+          <div id="integration-section" style="display:none;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="meeting-card" style="opacity:0.5;cursor:default;">
+                <div class="meeting-logo">🎥</div>
+                <p class="meeting-name">Zoom</p>
+                <p class="meeting-status"><span style="font-size:11px;color:var(--text3);">Coming soon</span></p>
+              </div>
+              <div class="meeting-card" style="opacity:0.5;cursor:default;">
+                <div class="meeting-logo">📹</div>
+                <p class="meeting-name">Google Meet</p>
+                <p class="meeting-status"><span style="font-size:11px;color:var(--text3);">Coming soon</span></p>
+              </div>
+              <div class="meeting-card" style="opacity:0.5;cursor:default;">
+                <div class="meeting-logo">💼</div>
+                <p class="meeting-name">Microsoft Teams</p>
+                <p class="meeting-status"><span style="font-size:11px;color:var(--text3);">Coming soon</span></p>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--text3);margin-top:12px;text-align:center;">Direct integrations will auto-join and record your calls without any extra steps.</p>
+          </div>
+
+          <!-- Auto-record toggle -->
+          <div class="auto-record-toggle" style="margin-top:14px;">
+            <div class="toggle-left">
+              <div class="toggle-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+              </div>
+              <div>
+                <p class="toggle-label">Auto-record on join</p>
+                <p class="toggle-sub">Starts recording the moment you enter any connected call</p>
+              </div>
+            </div>
+            <div class="switch on" id="auto-toggle" onclick="toggleSwitch(this)">
+              <div class="switch-thumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT SESSIONS -->
+      <div class="sessions-header">
+        <h2 class="sessions-title">Recent sessions</h2>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="showPage('sessions')">View all</button>
+      </div>
+      <div id="recent-sessions-list">
+        <div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">No recordings yet — hit the mic to start!</div>
+      </div>
+    </div>
+
+    <!-- SESSIONS PAGE -->
+    <div class="page" id="page-sessions">
+      <div id="sessions-list-container">
+        <div style="text-align:center;padding:40px;color:var(--text3);font-size:14px;">No recordings yet. Hit record to get started!</div>
+      </div>
+    </div>
+
+    <!-- NOTES PAGE -->
+    <div class="page" id="page-notes">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span class="tag tag-purple">Biology 101</span>
+              <span class="speaker-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Prof. Chen</span>
+            </div>
+            <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px;">Cell Cycle & Mitosis</h2>
+            <p style="font-size:13px;color:var(--text2)">Today, 10:15 AM · 48 min · In-person</p>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Export</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+            <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--accent)">7</p>
+            <p style="font-size:12px;color:var(--text2)">Key topics</p>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+            <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--green)">12</p>
+            <p style="font-size:12px;color:var(--text2)">Key terms</p>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+            <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--amber)">3</p>
+            <p style="font-size:12px;color:var(--text2)">Action items</p>
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Summary</p>
+          <p style="font-size:14px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border);">Prof. Chen covered the cell cycle phases (G1, S, G2, M) with emphasis on checkpoint mechanisms. Key focus was on how cyclins regulate CDKs at the G1 and G2 checkpoints, and how errors trigger apoptosis. Mitosis stages were reviewed with diagrams.</p>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Key topics</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">01</span>Cell cycle phases: G1, S, G2, M phase</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">02</span>G1 and G2 checkpoint mechanisms</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">03</span>Cyclin-CDK regulation and cancer links</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">04</span>Stages of mitosis (PMAT)</div>
+          </div>
+        </div>
+
+        <div>
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Action items</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Review Chapter 4 diagrams before Friday's quiz
+            </div>
+            <div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Memorize cyclin names and their corresponding phases
+            </div>
+            <div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Watch Khan Academy video on apoptosis (Prof. Chen recommended)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div style="max-width:560px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Recording</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+                <div><p class="toggle-label">Auto-detect speakers</p><p class="toggle-sub">Label Lecturer and Student in transcript</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <div><p class="toggle-label">Show pause markers</p><p class="toggle-sub">Display ⏸ pause in transcript</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+                <div><p class="toggle-label">AI transcript correction</p><p class="toggle-sub">Fix context errors like "drawstring" → "draw swing"</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Notes</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div><p class="toggle-label">Auto-generate notes on stop</p><p class="toggle-sub">Immediately process notes when recording ends</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M12 12h.01"/></svg></div>
+                <div><p class="toggle-label">Include full transcript in notes</p><p class="toggle-sub">Show raw transcript at bottom of notes page</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Language</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><p style="font-size:14px;font-weight:500;">Transcription language</p><p style="font-size:12px;color:var(--text2);">Language spoken in your lectures</p></div>
+            <select style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;">
+              <option>English (US)</option>
+              <option>English (UK)</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>Mandarin</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="page-profile">
+      <div style="max-width:560px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f07060);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:white;">J</div>
+            <div>
+              <p style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">Jayan</p>
+              <p style="font-size:13px;color:var(--text2);">Free plan · Student</p>
+            </div>
+            <button class="btn btn-ghost" style="margin-left:auto;font-size:12px;padding:6px 14px;">Edit</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:13px;color:var(--text2);">Email</span>
+              <span style="font-size:13px;">jayan@email.com</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:13px;color:var(--text2);">Account type</span>
+              <span style="font-size:13px;">Student</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;">
+              <span style="font-size:13px;color:var(--text2);">Member since</span>
+              <span style="font-size:13px;">March 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Usage this month</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--accent)">4</p>
+              <p style="font-size:12px;color:var(--text2)">Recordings</p>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--green)">3.2h</p>
+              <p style="font-size:12px;color:var(--text2)">Recorded</p>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--amber)">$0.12</p>
+              <p style="font-size:12px;color:var(--text2)">API cost</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBJECTS PAGE -->
+    <div class="page" id="page-subjects">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <p style="font-size:13px;color:var(--text2)">Organize your recordings by class or subject</p>
+        <button class="btn btn-accent" style="font-size:12px;padding:7px 14px;" onclick="addSubject()">+ New subject</button>
+      </div>
+      <div id="subjects-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+        <div class="subject-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='rgba(240,112,96,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:20px;">⛳</div>
+          <p style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">Golf</p>
+          <p style="font-size:12px;color:var(--text2);">3 recordings</p>
+        </div>
+        <div class="subject-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='rgba(45,206,137,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--green-dim);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:20px;">🧬</div>
+          <p style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">Biology 101</p>
+          <p style="font-size:12px;color:var(--text2);">2 recordings</p>
+        </div>
+        <div class="subject-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='rgba(251,99,64,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--amber-dim);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:20px;">💻</div>
+          <p style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">CS 301</p>
+          <p style="font-size:12px;color:var(--text2);">1 recording</p>
+        </div>
+        <div id="add-subject-card" onclick="addSubject()" style="background:transparent;border:1px dashed var(--border2);border-radius:14px;padding:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:120px;transition:all 0.15s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" style="width:24px;height:24px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <p style="font-size:13px;color:var(--text3);">Add subject</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div style="max-width:560px;display:flex;flex-direction:column;gap:12px;">
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+            <p style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Recording</p>
+          </div>
+          <div style="padding:8px 0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+              <div><p style="font-size:13px;font-weight:500;">Spoken language</p><p style="font-size:12px;color:var(--text2);">Language being spoken in the room</p></div>
+              <select id="setting-spoken-lang" onchange="saveLanguageSettings()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;padding:6px 10px;font-family:'DM Sans',sans-serif;">
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="es-ES">Spanish</option>
+                <option value="fr-FR">French</option>
+                <option value="de-DE">German</option>
+                <option value="it-IT">Italian</option>
+                <option value="pt-BR">Portuguese</option>
+                <option value="zh-CN">Mandarin</option>
+                <option value="ja-JP">Japanese</option>
+                <option value="ko-KR">Korean</option>
+                <option value="ar-SA">Arabic</option>
+                <option value="hi-IN">Hindi</option>
+                <option value="ru-RU">Russian</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);">
+              <div><p style="font-size:13px;font-weight:500;">Notes output language</p><p style="font-size:12px;color:var(--text2);">Language for your summary and notes</p></div>
+              <select id="setting-output-lang" onchange="saveLanguageSettings()" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;padding:6px 10px;font-family:'DM Sans',sans-serif;">
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Italian">Italian</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Mandarin Chinese">Mandarin Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Russian">Russian</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);">
+              <div><p style="font-size:13px;font-weight:500;">Auto-detect speaker</p><p style="font-size:12px;color:var(--text2);">Label Lecturer vs Student automatically</p></div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);">
+              <div><p style="font-size:13px;font-weight:500;">Pause detection</p><p style="font-size:12px;color:var(--text2);">Show ⏸ pause markers in transcript</p></div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);">
+              <div><p style="font-size:13px;font-weight:500;">Context correction</p><p style="font-size:12px;color:var(--text2);">Fix misheard words using AI context</p></div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+            <p style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Notes</p>
+          </div>
+          <div style="padding:8px 0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+              <div><p style="font-size:13px;font-weight:500;">Auto-generate notes</p><p style="font-size:12px;color:var(--text2);">Generate notes automatically after recording</p></div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);">
+              <div><p style="font-size:13px;font-weight:500;">Show full transcript</p><p style="font-size:12px;color:var(--text2);">Include raw transcript at bottom of notes</p></div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+            <p style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Online meetings</p>
+          </div>
+          <div style="padding:8px 0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;">
+              <div><p style="font-size:13px;font-weight:500;">Auto-record on join</p><p style="font-size:12px;color:var(--text2);">Start recording when you join a call</p></div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-ghost" style="align-self:flex-start;color:var(--red);border-color:rgba(245,54,92,0.3);">Delete all recordings</button>
+      </div>
+    </div>
+
+    <!-- UPGRADE PAGE -->
+    <div class="page" id="page-upgrade">
+      <div style="max-width:680px;margin:0 auto;" id="upgrade-plans-view">
+
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:24px;">
+          <h2 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px;">Unlock the full experience</h2>
+          <p style="font-size:14px;color:var(--text2);">Start free for 7 days — no credit card required.</p>
+        </div>
+
+        <!-- Billing toggle -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:24px;">
+          <span id="toggle-monthly-label" style="font-size:13px;color:var(--text2);cursor:pointer;" onclick="setBilling('monthly')">Monthly</span>
+          <div style="width:48px;height:26px;background:var(--accent);border-radius:13px;position:relative;cursor:pointer;" onclick="toggleBilling()">
+            <div id="billing-thumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:transform 0.2s;transform:translateX(22px);"></div>
+          </div>
+          <span id="toggle-annual-label" style="font-size:13px;color:var(--text);font-weight:500;cursor:pointer;" onclick="setBilling('annual')">Annual <span style="background:var(--green-dim);color:var(--green);font-size:10px;padding:2px 6px;border-radius:99px;margin-left:4px;font-weight:600;">SAVE 35%</span></span>
+        </div>
+
+        <!-- Plan cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+
+          <!-- Free -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:22px;display:flex;flex-direction:column;">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;">Free</p>
+            <div style="margin-bottom:4px;">
+              <span style="font-family:'Syne',sans-serif;font-size:30px;font-weight:800;">$0</span>
+            </div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:18px;">Forever free</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px;flex:1;">
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>5 recordings/month</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>In-person recording</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Basic AI notes</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text3);"><span>✗</span>Online meetings</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text3);"><span>✗</span>Translate feature</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text3);"><span>✗</span>Export notes</div>
+            </div>
+            <button class="btn btn-ghost" style="width:100%;font-size:13px;opacity:0.5;cursor:default;" disabled>Current plan</button>
+          </div>
+
+          <!-- Pro -->
+          <div style="background:var(--bg2);border:2px solid var(--accent);border-radius:18px;padding:22px;display:flex;flex-direction:column;position:relative;box-shadow:0 0 30px rgba(240,112,96,0.1);">
+            <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f07060,#e05540);color:white;font-size:10px;font-weight:700;padding:3px 12px;border-radius:99px;white-space:nowrap;letter-spacing:0.05em;">MOST POPULAR</div>
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:var(--accent);text-transform:uppercase;margin-bottom:12px;">Pro</p>
+            <div style="margin-bottom:4px;display:flex;align-items:flex-end;gap:4px;">
+              <span style="font-family:'Syne',sans-serif;font-size:30px;font-weight:800;" id="pro-price">$5.99</span>
+              <span style="font-size:13px;color:var(--text2);margin-bottom:5px;" id="pro-period">/mo</span>
+            </div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:18px;" id="pro-billing">Billed $71.88/year · 7-day free trial</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px;flex:1;">
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Unlimited recordings</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>In-person + online</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Translate to any language</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Context correction</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Export & share notes</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Flashcards & quizzes</div>
+            </div>
+            <button class="btn btn-accent" style="width:100%;font-size:13px;padding:11px;" onclick="showCheckout('pro')">Start free trial</button>
+          </div>
+
+          <!-- Teams -->
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:22px;display:flex;flex-direction:column;">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.08em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;">Teams</p>
+            <div style="margin-bottom:4px;display:flex;align-items:flex-end;gap:4px;">
+              <span style="font-family:'Syne',sans-serif;font-size:30px;font-weight:800;" id="teams-price">$9.99</span>
+              <span style="font-size:13px;color:var(--text2);margin-bottom:5px;">/user/mo</span>
+            </div>
+            <p style="font-size:12px;color:var(--text3);margin-bottom:18px;" id="teams-billing">Billed $119.88/year · 7-day free trial</p>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px;flex:1;">
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Everything in Pro</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Share notes with class</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Collaborative editing</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Admin dashboard</div>
+              <div style="display:flex;gap:8px;font-size:13px;color:var(--text2);"><span style="color:var(--green);">✓</span>Priority support</div>
+            </div>
+            <button class="btn btn-ghost" style="width:100%;font-size:13px;padding:11px;" onclick="showCheckout('teams')">Start free trial</button>
+          </div>
+        </div>
+
+        <!-- Student discount -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">🎓</span>
+            <div>
+              <p style="font-size:13px;font-weight:500;">Student discount</p>
+              <p style="font-size:12px;color:var(--text2);">Verify your student status and get 15% off Pro</p>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;white-space:nowrap;" onclick="showStudentDiscount()">Claim discount</button>
+        </div>
+
+        <p style="text-align:center;font-size:12px;color:var(--text3);">Cancel anytime · No charge during trial · Secure checkout</p>
+      </div>
+
+      <!-- CHECKOUT VIEW (hidden by default) -->
+      <div id="upgrade-checkout-view" style="display:none;max-width:440px;margin:0 auto;">
+        <button onclick="showPlans()" style="background:transparent;border:none;color:var(--text2);font-size:13px;cursor:pointer;margin-bottom:20px;display:flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to plans
+        </button>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;overflow:hidden;">
+
+          <!-- Order summary -->
+          <div style="padding:20px 24px;border-bottom:1px solid var(--border);background:var(--bg3);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <p style="font-size:14px;font-weight:600;" id="checkout-plan-name">AURA Pro</p>
+              <p style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;" id="checkout-plan-price">$3.99/mo</p>
+            </div>
+            <p style="font-size:12px;color:var(--text2);" id="checkout-plan-desc">Billed annually · 7-day free trial</p>
+            <div style="margin-top:10px;padding:8px 10px;background:var(--green-dim);border-radius:8px;border:1px solid rgba(52,211,153,0.2);">
+              <p style="font-size:12px;color:var(--green);font-weight:500;">✓ 7-day free trial — you won't be charged today</p>
+            </div>
+          </div>
+
+          <div style="padding:24px;">
+            <!-- Express payment -->
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;">Express checkout</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+              <button onclick="handleExpressPayment('apple')" style="padding:11px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-size:14px;font-weight:600;color:var(--text);font-family:'DM Sans',sans-serif;transition:all 0.15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">
+                 Pay
+              </button>
+              <button onclick="handleExpressPayment('google')" style="padding:11px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-size:14px;font-weight:600;color:var(--text);font-family:'DM Sans',sans-serif;transition:all 0.15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">
+                G Pay
+              </button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <div style="flex:1;height:1px;background:var(--border);"></div>
+              <span style="font-size:12px;color:var(--text3);">or pay with card</span>
+              <div style="flex:1;height:1px;background:var(--border);"></div>
+            </div>
+
+            <!-- Card form - Stripe Elements -->
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+              <div>
+                <p style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:5px;">Email</p>
+                <input type="email" id="checkout-email" placeholder="you@example.com" style="width:100%;padding:10px 12px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border2)'">
+              </div>
+              <div>
+                <p style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:5px;">Card details</p>
+                <div id="stripe-card-element" style="padding:11px 12px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);"></div>
+                <p id="stripe-card-error" style="color:var(--red);font-size:12px;margin-top:5px;display:none;"></p>
+              </div>
+            </div>
+
+            <button onclick="handleCardPayment()" id="pay-btn" class="btn btn-accent" style="width:100%;padding:13px;font-size:14px;border-radius:10px;">
+              Start free trial
+            </button>
+
+            <p style="text-align:center;font-size:11px;color:var(--text3);margin-top:12px;">
+              🔒 Secure checkout · Cancel anytime · No charge for 7 days
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS VIEW -->
+      <div id="upgrade-success-view" style="display:none;max-width:400px;margin:0 auto;text-align:center;padding:40px 0;">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--green-dim);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;">✓</div>
+        <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:8px;">You're on Pro!</h2>
+        <p style="font-size:14px;color:var(--text2);margin-bottom:24px;">Your 7-day free trial has started. Enjoy unlimited recordings and all Pro features.</p>
+        <button class="btn btn-accent" style="padding:11px 28px;" onclick="showPage('record')">Start recording</button>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="page-profile">
+      <div style="max-width:480px;display:flex;flex-direction:column;gap:12px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;align-items:center;gap:16px;">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f07060);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:white;flex-shrink:0;">J</div>
+          <div style="flex:1;">
+            <p style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:2px;">Jayan</p>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">jayan@email.com</p>
+            <span style="font-size:11px;padding:3px 8px;background:var(--accent-glow);color:var(--accent);border-radius:5px;font-weight:500;">Free plan</span>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">Edit</button>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);">
+            <p style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;">Your stats</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
+            <div style="padding:16px 20px;text-align:center;border-right:1px solid var(--border);">
+              <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--accent);">6</p>
+              <p style="font-size:12px;color:var(--text2);">Recordings</p>
+            </div>
+            <div style="padding:16px 20px;text-align:center;border-right:1px solid var(--border);">
+              <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--green);">3</p>
+              <p style="font-size:12px;color:var(--text2);">Subjects</p>
+            </div>
+            <div style="padding:16px 20px;text-align:center;">
+              <p style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--amber);">4.2h</p>
+              <p style="font-size:12px;color:var(--text2);">Total recorded</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+          <div style="padding:8px 0;">
+            <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text2)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <p style="font-size:13px;">Account settings</p>
+            </div>
+            <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background 0.15s;border-top:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''" onclick="showPage('upgrade')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" style="width:16px;height:16px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <p style="font-size:13px;color:var(--accent);">Upgrade to Pro</p>
+            </div>
+            <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background 0.15s;border-top:1px solid var(--border);" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="width:16px;height:16px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <p style="font-size:13px;color:var(--red);">Sign out</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ── Missing functions restored ────────────────────────
+window.onerror = function(msg, src, line, col, err) {
+  console.error('AURA Error:', msg, 'at line', line);
+  // Show visible error for debugging
+  document.title = 'ERROR: ' + msg + ' line ' + line;
+};
+
+let isRecording = false, timerInterval, seconds = 0;
+let recognition = null, liveTranscript = '';
+let micPermissionGranted = false, persistentMicStream = null;
+let mediaRecorder = null, audioChunks = [];
+
+// ── Plan enforcement ─────────────────────────────────
+const PLANS = {
+  free: {
+    recordingsPerMonth: 5,
+    translationsPerMonth: 2,
+    exportsPerMonth: 2,
+    maxSubjects: 2,
+    onlineMeetingsPerMonth: 1,
+    recordingModes: ["normal"],
+    fullNotes: false,
+  },
+  pro: {
+    recordingsPerMonth: Infinity,
+    translationsPerMonth: Infinity,
+    exportsPerMonth: Infinity,
+    maxSubjects: Infinity,
+    onlineMeetingsPerMonth: Infinity,
+    recordingModes: ["normal", "distant", "lecture-hall"],
+    fullNotes: true,
+  },
+  teams: {
+    recordingsPerMonth: Infinity,
+    translationsPerMonth: Infinity,
+    exportsPerMonth: Infinity,
+    maxSubjects: Infinity,
+    onlineMeetingsPerMonth: Infinity,
+    recordingModes: ["normal", "distant", "lecture-hall"],
+    fullNotes: true,
+  }
+};
+
+// ── Session persistence ──────────────────────────────
+async function startWhisperRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,        // mono
+        sampleRate: 16000,      // 16kHz - enough for speech, smaller files
+        echoCancellation: true,
+        noiseSuppression: true,
+      }
+    });
+
+    const cfg = MODE_CONFIG[window._recordMode] || MODE_CONFIG['normal'];
+    let recordStream = stream;
+    if (cfg.gain > 1.0 && window.AudioContext) {
+      try {
+        const ctx = new AudioContext();
+        const source = ctx.createMediaStreamSource(stream);
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = cfg.gain;
+        const dest = ctx.createMediaStreamDestination();
+        source.connect(gainNode);
+        gainNode.connect(dest);
+        recordStream = dest.stream;
+        window._audioCtx = ctx;
+      } catch(e) {}
+    }
+
+    audioChunks = [];
+    window._activeStream = stream;
+
+    // Use opus codec at low bitrate to keep files small
+    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+      ? 'audio/webm;codecs=opus'
+      : MediaRecorder.isTypeSupported('audio/webm')
+      ? 'audio/webm' : 'audio/mp4';
+
+    const options = { mimeType };
+    // Try to set low bitrate for smaller files
+    try { options.audioBitsPerSecond = 16000; } catch(e) {}
+
+    mediaRecorder = new MediaRecorder(recordStream, options);
+    mediaRecorder.ondataavailable = e => {
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
+    mediaRecorder.onerror = e => console.error('MediaRecorder error:', e);
+
+    // Start Web Speech API for live visual transcript only
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SR) {
+      window._liveRecognition = new SR();
+      window._liveRecognition.continuous = true;
+      window._liveRecognition.interimResults = true;
+      window._liveRecognition.lang = localStorage.getItem('lectureapp_spoken_lang') || 'en-US';
+      let liveText = '';
+      window._liveRecognition.onresult = e => {
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            let t = e.results[i][0].transcript.trim();
+            if (t) { t = t.charAt(0).toUpperCase() + t.slice(1); if (!/[.!?]$/.test(t)) t += '.'; liveText += ' ' + t; }
+          } else interim += e.results[i][0].transcript;
+        }
+        const body = document.getElementById('transcript-body');
+        if (body) body.innerHTML = '<div style="font-size:13px;line-height:1.9;color:var(--text);">' + liveText + (interim ? '<span style="color:var(--text3);"> ' + interim + '</span>' : '') + '</div>';
+      };
+      window._liveRecognition.onend = () => { if (isRecording) try { window._liveRecognition.start(); } catch(e) {} };
+      window._liveRecognition.onerror = e => { if (!['no-speech','aborted'].includes(e.error)) console.log('Live SR error:', e.error); };
+      try { window._liveRecognition.start(); } catch(e) {}
+    }
+
+    mediaRecorder.onstop = async () => {
+      // Stop live recognition
+      if (window._liveRecognition) { window._liveRecognition.onend = null; try { window._liveRecognition.stop(); } catch(e) {} }
+      console.log('MediaRecorder stopped, chunks:', audioChunks.length);
+      stream.getTracks().forEach(t => t.stop());
+      if (audioChunks.length === 0) {
+        showError('No audio captured. Check your microphone.');
+        document.getElementById('record-status').textContent = 'Ready to record';
+        document.getElementById('record-sub').textContent = 'Tap the mic to start capturing your lecture';
+        return;
+      }
+      const blob = new Blob(audioChunks, { type: mimeType });
+      console.log('Audio blob size:', (blob.size/1024/1024).toFixed(2) + 'MB');
+      await transcribeWithWhisper(blob);
+    };
+    mediaRecorder.start(1000);
+    console.log('MediaRecorder started, mimeType:', mimeType);
+    return true;
+  } catch(e) {
+    if (e.name === 'NotAllowedError') showError('Mic access denied. Allow microphone and try again.');
+    else showError('Could not access microphone: ' + e.message);
+    return false;
+  }
+}
+
+
+async function transcribeWithWhisper(blob) {
+  const subEl = document.getElementById('record-sub');
+  const statusEl = document.getElementById('record-status');
+
+  try {
+    const spokenLang = localStorage.getItem('lectureapp_spoken_lang') || 'en-US';
+    const langCode = spokenLang.split('-')[0];
+    const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+
+    console.log('Audio blob size:', sizeMB + 'MB type:', blob.type);
+    subEl.textContent = 'Transcribing ' + sizeMB + 'MB with Whisper...';
+
+    // Send the whole file — webm chunks are invalid so we must send complete file
+    // Whisper supports up to 25MB, which covers ~45 mins of audio
+    if (blob.size > 24 * 1024 * 1024) {
+      throw new Error('Recording is too large (' + sizeMB + 'MB). Max is about 45 minutes. Please record in shorter segments.');
+    }
+
+    const audioFile = new File([blob], 'recording.webm', { type: 'audio/webm' });
+    const formData = new FormData();
+    formData.append('file', audioFile, 'recording.webm');
+    formData.append('model', 'whisper-1');
+    if (langCode !== 'en') formData.append('language', langCode);
+    formData.append('response_format', 'text');
+
+    let response;
+    try {
+      response = await fetch('http://localhost:3000/whisper/v1/audio/transcriptions', {
+        method: 'POST',
+        body: formData
+      });
+    } catch(fetchErr) {
+      throw new Error('Network error: ' + fetchErr.message);
+    }
+
+    console.log('Whisper response status:', response.status);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Whisper error:', errText);
+      throw new Error('Whisper error ' + response.status + ': ' + errText.substring(0, 200));
+    }
+
+    const transcript = await response.text();
+    console.log('Transcript length:', transcript.length, 'chars');
+
+    if (!transcript || !transcript.trim()) {
+      throw new Error('No speech detected. Please speak clearly and try again.');
+    }
+
+    liveTranscript = transcript.trim();
+
+    // Show transcript
+    const body = document.getElementById('transcript-body');
+    if (body) {
+      body.innerHTML = '<div style="font-size:13px;line-height:1.9;color:var(--text);">' + liveTranscript + '</div>';
+    }
+
+    subEl.textContent = 'Generating notes...';
+    await processTranscript(liveTranscript);
+
+  } catch(e) {
+    console.error('Whisper failed:', e);
+    showError('Error: ' + e.message);
+    statusEl.textContent = 'Ready to record';
+    subEl.textContent = 'Tap the mic to start capturing your lecture';
+    document.getElementById('timer').textContent = '00:00';
+  }
+}
+
+async function requestMicOnce() {
+  if (micPermissionGranted) return true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    persistentMicStream = stream;
+    micPermissionGranted = true;
+    const cfg = MODE_CONFIG[window._recordMode] || MODE_CONFIG['normal'];
+    if (cfg.gain > 1.0 && window.AudioContext) {
+      try {
+        const ctx = new AudioContext();
+        const source = ctx.createMediaStreamSource(stream);
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = cfg.gain;
+        const dest = ctx.createMediaStreamDestination();
+        source.connect(gainNode);
+        gainNode.connect(dest);
+        window._audioCtx = ctx;
+      } catch(e) {}
+    }
+    return true;
+  } catch(e) {
+    if (e.name === 'NotAllowedError') showError('Mic access denied. Allow microphone access and try again.');
+    else showError('Could not access microphone: ' + e.message);
+    return false;
+  }
+}
+
+function renderRecentSessions() {
+  const container = document.getElementById('recent-sessions-list');
+  if (!container) return;
+  const sessions = getSessions().slice(0, 4);
+  if (!sessions.length) {
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">No recordings yet — hit the mic to start!</div>';
+    return;
+  }
+  const items = sessions.map(function(s) {
+    const icon = s.type === 'online' ? '📹' : '🎙️';
+    const iconClass = s.type === 'online' ? 'online' : 'inperson';
+    const speaker = s.speaker ? '<span class="speaker-badge">' + s.speaker + '</span>' : '';
+    return '<div class="session-item" onclick="openSession(\"' + s.id + '\")">' +
+      '<div class="session-icon ' + iconClass + '">' + icon + '</div>' +
+      '<div class="session-body"><p class="session-title">' + s.title + '</p>' +
+      '<div class="session-meta"><span>' + s.dateFull + '</span><span>' + s.duration + '</span>' + speaker + '</div></div>' +
+      '<div class="session-right"><span class="tag tag-purple">Notes ready</span></div></div>';
+  });
+  container.innerHTML = '<div class="session-list">' + items.join('') + '</div>';
+}
+
+function enforcePlanUI() {
+  // Mode restrictions temporarily disabled — all modes available
+  ['normal', 'distant', 'lecture-hall'].forEach(function(mode) {
+    const btn = document.getElementById('mode-' + mode);
+    if (!btn) return;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.onclick = function() { setRecordMode(mode); };
+  });
+}
+
+
+
+window.onerror = function(msg, src, line, col, err) {
+  console.error('AURA Error:', msg, 'at line', line);
+  // Show visible error for debugging
+  document.title = 'ERROR: ' + msg + ' line ' + line;
+};
+
+function toggleSubjectNav(header) {
+  header.classList.toggle('open');
+  const sessions = header.nextElementSibling;
+  if (sessions) sessions.classList.toggle('open');
+}
+
+
+
+// ── Plan enforcement ─────────────────────────────────
+function getCurrentPlan() {
+  return localStorage.getItem("aura_plan") || "free";
+}
+function getPlanLimits() {
+  return PLANS[getCurrentPlan()] || PLANS.free;
+}
+function getUsageThisMonth(key) {
+  const month = new Date().toISOString().slice(0, 7);
+  try { return JSON.parse(localStorage.getItem("aura_usage_" + month) || "{}")[key] || 0; } catch(e) { return 0; }
+}
+function incrementUsage(key) {
+  const month = new Date().toISOString().slice(0, 7);
+  const storageKey = "aura_usage_" + month;
+  try {
+    const data = JSON.parse(localStorage.getItem(storageKey) || "{}");
+    data[key] = (data[key] || 0) + 1;
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  } catch(e) {}
+}
+function checkLimit(key, limitKey) {
+  const limit = getPlanLimits()[limitKey];
+  if (limit === Infinity) return true;
+  return getUsageThisMonth(key) < limit;
+}
+function showUpgradePrompt(reason) {
+  const modal = document.createElement("div");
+  modal.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:9999;";
+  modal.innerHTML = "<div style=\"background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:32px;width:380px;max-width:90vw;text-align:center;\">" +
+    "<div style=\"font-size:36px;margin-bottom:16px;\">&#x26A1;</div>" +
+    "<h3 style=\"font-family:\'Syne\',sans-serif;font-size:19px;font-weight:700;margin-bottom:8px;\">You\'ve hit your free limit</h3>" +
+    "<p style=\"font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6;\">" + reason + "</p>" +
+    "<button onclick=\"this.closest(\"[style]\").remove();showPage(\'upgrade\');\" class=\"btn btn-accent\" style=\"width:100%;padding:12px;font-size:14px;margin-bottom:10px;\">Upgrade to Pro</button>" +
+    "<button onclick=\"this.closest(\"[style]\").remove();\" style=\"background:transparent;border:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif;\">Maybe later</button>" +
+    "</div>";
+  document.body.appendChild(modal);
+}
+function showUsageBadge() {
+  const plan = getCurrentPlan();
+  if (plan !== "free") return;
+  const used = getUsageThisMonth("recordings");
+  const remaining = PLANS.free.recordingsPerMonth - used;
+  const badge = document.getElementById("usage-badge");
+  if (badge) {
+    badge.textContent = remaining + " recording" + (remaining !== 1 ? "s" : "") + " left this month";
+    badge.style.display = remaining <= 3 ? "" : "none";
+  }
+}
+
+// ── Session persistence ──────────────────────────────
+function getSessions() {
+  try { return JSON.parse(localStorage.getItem('lectureapp_sessions') || '[]'); } catch(e) { return []; }
+}
+function saveSessions(sessions) {
+  localStorage.setItem('lectureapp_sessions', JSON.stringify(sessions));
+}
+function addSession(session) {
+  const sessions = getSessions();
+  sessions.unshift(session); // newest first
+  saveSessions(sessions);
+  renderSessionsTree();
+  renderSessionsPage();
+}
+function deleteSession(id) {
+  const sessions = getSessions().filter(s => s.id !== id);
+  saveSessions(sessions);
+  renderSessionsTree();
+  renderSessionsPage();
+}
+
+function renderSessionsTree() {
+  const tree = document.getElementById('nav-sessions-tree');
+  if (!tree) return;
+  const sessions = getSessions();
+  tree.innerHTML = '<p class="nav-label">Recent</p>';
+  if (!sessions.length) {
+    const empty = document.createElement('p');
+    empty.style.cssText = 'font-size:12px;color:var(--text3);padding:4px 10px;';
+    empty.textContent = 'No recordings yet';
+    tree.appendChild(empty);
+    return;
+  }
+  const grouped = {};
+  sessions.forEach(function(s) {
+    const subj = s.subject || 'General';
+    if (!grouped[subj]) grouped[subj] = [];
+    grouped[subj].push(s);
+  });
+  const emojis = {'Golf':'⛳','Biology':'🧬','Biology 101':'🧬','CS':'💻','CS 301':'💻','Math':'🧮','History':'🏛️','Psychology':'🧠','Chemistry':'⚗️','General':'📁'};
+  Object.entries(grouped).forEach(function(entry) {
+    const subj = entry[0];
+    const items = entry[1];
+    const wrapper = document.createElement('div');
+    wrapper.className = 'nav-subject';
+    const header = document.createElement('div');
+    header.className = 'nav-subject-header open';
+    header.onclick = function() { toggleSubjectNav(this); };
+    const emoji = document.createElement('span');
+    emoji.style.fontSize = '14px';
+    emoji.textContent = emojis[subj] || '📁';
+    const name = document.createElement('span');
+    name.textContent = subj;
+    const chevron = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevron.setAttribute('viewBox', '0 0 24 24');
+    chevron.setAttribute('class', 'chevron');
+    chevron.setAttribute('fill', 'none');
+    chevron.setAttribute('stroke', 'currentColor');
+    chevron.setAttribute('stroke-width', '2');
+    chevron.innerHTML = '<polyline points="9 18 15 12 9 6"/>';
+    header.appendChild(emoji);
+    header.appendChild(name);
+    header.appendChild(chevron);
+    const sessDiv = document.createElement('div');
+    sessDiv.className = 'nav-subject-sessions open';
+    items.forEach(function(s) {
+      const item = document.createElement('div');
+      item.className = 'nav-session-item';
+      item.textContent = s.dateShort + ' · ' + s.title;
+      item.onclick = function() { openSession(s.id); };
+      sessDiv.appendChild(item);
+    });
+    wrapper.appendChild(header);
+    wrapper.appendChild(sessDiv);
+    tree.appendChild(wrapper);
+  });
+}
+
+function renderSessionsPage() {
+  const container = document.getElementById('sessions-list-container');
+  if (!container) return;
+  const sessions = getSessions();
+  if (!sessions.length) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px;">No recordings yet. Hit record to get started!</div>';
+    return;
+  }
+  const grouped = {};
+  sessions.forEach(function(s) {
+    const subj = s.subject || 'General';
+    if (!grouped[subj]) grouped[subj] = [];
+    grouped[subj].push(s);
+  });
+  container.innerHTML = '';
+  Object.entries(grouped).forEach(function(entry) {
+    const subj = entry[0];
+    const items = entry[1];
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-bottom:24px;';
+    const label = document.createElement('p');
+    label.style.cssText = 'font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;';
+    label.textContent = subj;
+    section.appendChild(label);
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+    items.forEach(function(s) {
+      const item = document.createElement('div');
+      item.className = 'session-item';
+      item.style.cssText = 'cursor:pointer;';
+      item.onclick = function() { openSession(s.id); };
+      const icon = document.createElement('div');
+      icon.className = 'session-icon ' + (s.type === 'online' ? 'online' : 'inperson');
+      icon.textContent = s.type === 'online' ? '📹' : '🎙️';
+      const body = document.createElement('div');
+      body.className = 'session-body';
+      const title = document.createElement('p');
+      title.className = 'session-title';
+      title.textContent = s.title;
+      const meta = document.createElement('div');
+      meta.className = 'session-meta';
+      meta.innerHTML = '<span>' + s.dateFull + '</span><span>' + s.duration + '</span>' +
+        (s.speaker ? '<span class="speaker-badge">' + s.speaker + '</span>' : '');
+      body.appendChild(title);
+      body.appendChild(meta);
+      const right = document.createElement('div');
+      right.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0;';
+      const tag = document.createElement('span');
+      tag.className = 'tag tag-purple';
+      tag.textContent = 'Notes ready';
+      const del = document.createElement('div');
+      del.style.cssText = 'padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--text3);font-size:11px;';
+      del.textContent = '✕';
+      del.title = 'Delete';
+      del.onclick = function(e) {
+        e.stopPropagation();
+        deleteSession(s.id);
+      };
+      right.appendChild(tag);
+      right.appendChild(del);
+      item.appendChild(icon);
+      item.appendChild(body);
+      item.appendChild(right);
+      list.appendChild(item);
+    });
+    section.appendChild(list);
+    container.appendChild(section);
+  });
+}
+
+function openSession(id) {
+  const sessions = getSessions();
+  const session = sessions.find(s => s.id === id);
+  if (!session || !session.notes) return;
+  window._lastNotes = session.notes;
+  renderNotes(session.notes);
+  showPage('notes');
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + name);
+  if (!page) return;
+  page.classList.add('active');
+  const titles = { record: 'Record', sessions: 'Sessions', notes: 'Notes', settings: 'Settings', profile: 'Profile', upgrade: 'Upgrade' };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  const navMap = { record: 0, sessions: 1, notes: 2 };
+  if (navMap[name] !== undefined) document.querySelectorAll('.nav-item')[navMap[name]]?.classList.add('active');
+}
+
+function switchRecordTab(tab) {
+  document.getElementById('inperson-tab').style.display = tab === 'inperson' ? '' : 'none';
+  document.getElementById('online-tab').style.display = tab === 'online' ? '' : 'none';
+  document.getElementById('tab-inperson').classList.toggle('active', tab === 'inperson');
+  document.getElementById('tab-online').classList.toggle('active', tab === 'online');
+}
+
+function showError(msg) {
+  document.getElementById('record-status').textContent = 'Error';
+  const sub = document.getElementById('record-sub');
+  sub.textContent = msg;
+  sub.style.color = 'var(--red)';
+  setTimeout(() => {
+    sub.style.color = '';
+    document.getElementById('record-status').textContent = 'Ready to record';
+    sub.textContent = 'Tap the mic to start capturing your lecture';
+  }, 7000);
+}
+
+function startRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = localStorage.getItem('lectureapp_spoken_lang') || 'en-US';
+  recognition.maxAlternatives = 1;
+
+  let interimText = '';
+
+  function updateTranscriptDisplay() {
+    const body = document.getElementById('transcript-body');
+    if (!body) return;
+    const display = liveTranscript + (interimText ? '<span style="color:var(--text3);"> ' + interimText + '</span>' : '');
+    body.innerHTML = '<div style="font-size:13px;line-height:1.9;color:var(--text);">' +
+      (display || '<span style="color:var(--text3);font-style:italic;">Listening — speak to begin...</span>') +
+      '</div>';
+    body.scrollTop = body.scrollHeight;
+  }
+
+  recognition.onresult = e => {
+    interimText = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        let text = e.results[i][0].transcript.trim();
+        if (!text) continue;
+        // Basic capitalization and punctuation
+        text = text.charAt(0).toUpperCase() + text.slice(1);
+        if (!/[.!?]$/.test(text)) text += '.';
+        liveTranscript += ' ' + text;
+      } else {
+        interimText += e.results[i][0].transcript;
+      }
+    }
+    updateTranscriptDisplay();
+  };
+
+  // Auto-restart on end to handle long recordings — no permission re-request
+  recognition.onend = () => {
+    if (isRecording) {
+      try { recognition.start(); } catch(e) {}
+    }
+  };
+
+  recognition.onerror = e => {
+    if (['no-speech', 'aborted'].includes(e.error)) return;
+    if (e.error === 'network') { showError('Network error. Check your internet.'); return; }
+    // On other errors just try restarting
+    if (isRecording) {
+      setTimeout(() => { try { recognition.start(); } catch(err) {} }, 300);
+    }
+  };
+
+  recognition.start();
+}
+
+
+async function toggleRecord() {
+  if (!isRecording) {
+    // Check recording limit
+    if (!checkLimit("recordings", "recordingsPerMonth")) {
+      showUpgradePrompt("You've used all " + PLANS.free.recordingsPerMonth + " of your free recordings this month. Upgrade to Pro for unlimited recordings.");
+      return;
+    }
+
+    // Check recording mode limit
+    const mode = window._recordMode || "normal";
+    if (!getPlanLimits().recordingModes.includes(mode)) {
+      showUpgradePrompt("Distant and Lecture Hall modes are Pro features. Upgrade to unlock all recording modes.");
+      return;
+    }
+
+    liveTranscript = '';
+    segments = [];
+    window._segments = [];
+
+    const started = await startWhisperRecording();
+    if (!started) return;
+
+    isRecording = true;
+    startRecordingUI();
+  } else {
+    isRecording = false;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    stopRecordingUI();
+  }
+}
+
+function startRecordingUI() {
+  document.getElementById('record-btn').classList.add('recording');
+  document.getElementById('record-ring').classList.add('active');
+  document.getElementById('mic-icon').style.display = 'none';
+  document.getElementById('stop-icon').style.display = '';
+  document.getElementById('record-status').textContent = 'Recording...';
+  document.getElementById('record-sub').textContent = 'Listening for speakers — tap stop when done';
+  document.getElementById('live-transcript').style.display = '';
+  document.getElementById('transcript-body').innerHTML = '<div class="transcript-line" style="color:var(--text3);font-style:italic">Listening...</div>';
+  seconds = 0;
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds/60)).padStart(2,'0');
+    const s = String(seconds%60).padStart(2,'0');
+    document.getElementById('timer').textContent = m + ':' + s;
+  }, 1000);
+  animateWave(true);
+  setTimeout(() => { document.getElementById('speaker-chip').style.display = 'flex'; }, 3000);
+}
+
+function stopRecordingUI() {
+  document.getElementById('record-btn').classList.remove('recording');
+  document.getElementById('record-ring').classList.remove('active');
+  document.getElementById('mic-icon').style.display = '';
+  document.getElementById('stop-icon').style.display = 'none';
+  document.getElementById('record-status').textContent = 'Processing...';
+  document.getElementById('record-sub').textContent = 'Generating your notes with AI — just a moment';
+  clearInterval(timerInterval);
+  animateWave(false);
+  document.getElementById('speaker-chip').style.display = 'none';
+}
+
+async function processTranscript(transcript) {
+  const duration = formatTime(seconds);
+  try {
+    if (!transcript) throw new Error('No speech was detected. Please speak clearly and try again.');
+
+    // Step 1: Context-aware transcript correction
+    const notesRes = await fetch('http://localhost:3000/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        system: 'You are an expert lecture notes AI. Given a transcript, return ONLY valid JSON with no markdown, no extra text, no code fences. RULES: Write ALL text in ' + (localStorage.getItem('lectureapp_output_lang') || 'English') + '. Be as detailed as possible. Summary must be VERY detailed covering every major topic — 5-8 sentences minimum. detailedNotes must be thorough bullet points one per concept. Do NOT make up information. Return this exact JSON structure: {' +
+          '"title": "descriptive title",' +
+          '"subject": "subject area",' +
+          '"speaker": "main speaker name or null",' +
+          '"duration": "' + duration + '",' +
+          '"summary": "Very detailed paragraph covering ALL topics from the lecture minimum 5-8 sentences",' +
+          '"detailedNotes": ["• bullet point for each concept explained"],' +
+          '"keyPoints": ["key takeaway 1", "key takeaway 2", "key takeaway 3", "key takeaway 4", "key takeaway 5"],' +
+          (fullNotes ? '"questionsAsked": ["question asked"],' : '') +
+          (fullNotes ? '"keyTerms": [{"term": "word", "definition": "definition"}],' : '"keyTerms": [],') +
+          (fullNotes ? '"actionItems": ["homework or task"],' : '"actionItems": [],') +
+          (fullNotes ? '"importantQuotes": ["notable quote"]' : '"importantQuotes": []') +
+          '}',        messages: [{
+          role: 'user',
+          content: 'Speaker-labeled transcript ([Lecturer]/[Student]) with [pause] markers:\n\n' + transcriptForNotes
+        }]
+      })
+    });
+
+    const notesData = await notesRes.json();
+    if (notesData.error) throw new Error('Notes generation failed: ' + notesData.error.message);
+
+    const raw = notesData.content.map(b => b.text || '').join('').replace(/```json|```/g,'').trim();
+    const notes = JSON.parse(raw);
+    notes._transcript = transcript;
+    window._lastNotes = notes;
+    renderNotes(notes);
+    showPage('notes');
+    // Auto-save immediately under detected subject so nothing is lost
+    const autoSubject = notes.subject || 'General';
+    confirmSaveSession(autoSubject, notes);
+    // Then show subject picker so user can reassign if needed
+    setTimeout(() => showSubjectPicker(notes, duration), 500);
+    document.getElementById('record-status').textContent = 'Ready to record';
+    document.getElementById('record-sub').textContent = 'Tap the mic to start capturing your lecture';
+    document.getElementById('timer').textContent = '00:00';
+    document.getElementById('live-transcript').style.display = 'none';
+
+  } catch(err) {
+    console.error('Full error:', err);
+    document.getElementById('record-status').textContent = 'Ready to record';
+    document.getElementById('record-sub').textContent = 'Error: ' + err.message;
+    document.getElementById('record-sub').style.color = 'var(--red)';
+    document.getElementById('timer').textContent = '00:00';
+    setTimeout(() => {
+      document.getElementById('record-sub').style.color = '';
+      document.getElementById('record-sub').textContent = 'Tap the mic to start capturing your lecture';
+    }, 8000);
+  }
+}
+
+function renderNotes(n) {
+  const now = new Date();
+  const timeStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const speakerHTML = n.speaker
+    ? `<span class="speaker-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${n.speaker}</span>`
+    : '';
+
+  const keyPointsHTML = (n.keyPoints || []).map((p, i) =>
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:flex-start;">
+      <span style="color:var(--accent);font-size:11px;font-weight:600;min-width:20px;margin-top:1px;">${String(i+1).padStart(2,'0')}</span>
+      <span>${p}</span>
+    </div>`
+  ).join('');
+
+  const questionsHTML = (n.questionsAsked || []).map(q =>
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:flex-start;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <span>${q}</span>
+    </div>`
+  ).join('');
+
+  const detailedNotesHTML = (n.detailedNotes || []).map(note =>
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);line-height:1.6;">${note}</div>`
+  ).join('');
+
+  const termsHTML = (n.keyTerms || []).map(t => {
+    const term = typeof t === 'string' ? t : t.term;
+    const def = typeof t === 'string' ? '' : t.definition;
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;">
+      <span style="color:var(--accent);font-weight:500;">${term}</span>
+      ${def ? `<span style="color:var(--text3);margin:0 6px;">—</span><span style="color:var(--text2);">${def}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  const actionHTML = (n.actionItems || []).map(a =>
+    `<div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>${a}
+    </div>`
+  ).join('');
+
+  const quotesHTML = (n.importantQuotes || []).map(q =>
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--text3);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text2);font-style:italic;">"${q}"</div>`
+  ).join('');
+
+  const stats = [
+    { val: (n.keyPoints||[]).length, label: 'Key points', color: 'var(--accent)' },
+    { val: (n.questionsAsked||[]).length, label: 'Questions', color: 'var(--green)' },
+    { val: (n.keyTerms||[]).length, label: 'Key terms', color: 'var(--amber)' },
+    { val: (n.actionItems||[]).length, label: 'Action items', color: 'var(--red)' },
+  ];
+  const statsHTML = stats.map(s =>
+    `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+      <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:${s.color}">${s.val}</p>
+      <p style="font-size:12px;color:var(--text2)">${s.label}</p>
+    </div>`
+  ).join('');
+
+  function section(label, html, show=true) {
+    if (!html || !show) return '';
+    return `<div style="margin-bottom:20px;">
+      <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">${label}</p>
+      <div style="display:flex;flex-direction:column;gap:6px;">${html}</div>
+    </div>`;
+  }
+
+  document.getElementById('page-notes').innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+            <span class="tag tag-purple">${n.subject || 'General'}</span>
+            ${speakerHTML}
+          </div>
+          <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px;">${n.title || 'Recording'}</h2>
+          <p style="font-size:13px;color:var(--text2)">${timeStr} · ${n.duration} · In-person</p>
+        </div>
+        <div style="position:relative;display:inline-block;" id="export-wrapper">
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px;display:flex;align-items:center;gap:6px;" onclick="toggleExportMenu()">
+            Export
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="export-menu" style="display:none;position:absolute;top:36px;right:0;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:100;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+            <div onclick="exportAsPDF()" style="padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:10px;transition:background 0.12s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export as PDF
+            </div>
+            <div onclick="exportToGoogleDocs()" style="padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Open in Google Docs
+            </div>
+            <div onclick="exportToPages()" style="padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg>
+              Open in Pages
+            </div>
+            <div onclick="copyNotes()" style="padding:10px 16px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:10px;border-top:1px solid var(--border);transition:background 0.12s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0;"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy to clipboard
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">${statsHTML}</div>
+
+      <div style="margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Summary</p>
+        <p style="font-size:14px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border);">${n.summary}</p>
+      </div>
+
+      ${section('Key points', keyPointsHTML)}
+      ${detailedNotesHTML ? section('Detailed notes', detailedNotesHTML) : ''}
+      ${section('Questions asked', questionsHTML)}
+      ${section('Key terms & definitions', termsHTML)}
+      ${section('Action items', actionHTML)}
+      ${section('Notable quotes', quotesHTML)}
+
+      <div style="margin-top:16px;">
+        <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Full transcript</p>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;color:var(--text2);line-height:2;max-height:200px;overflow-y:auto;">${(n._transcript || 'No transcript available.').replace(/\[pause\]/g, '<span style="color:var(--text3);font-size:11px;padding:0 4px;background:var(--bg4);border-radius:3px;margin:0 3px;">⏸ pause</span>')}</div>
+      </div>
+    </div>`;
+}
+
+function showSubjectPicker(notes, duration) {
+  const existing = [...new Set(getSessions().map(s => s.subject).filter(Boolean))];
+  const detected = notes.subject || 'General';
+  const options = [...new Set([detected, ...existing, 'General'])];
+
+  const modal = document.createElement('div');
+  modal.id = 'subject-picker-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:28px;width:360px;max-width:90vw;';
+
+  const title = document.createElement('h3');
+  title.style.cssText = 'font-family:Syne,sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;';
+  title.textContent = 'Save to subject';
+  box.appendChild(title);
+
+  const subtitle = document.createElement('p');
+  subtitle.style.cssText = 'font-size:13px;color:var(--text2);margin-bottom:18px;';
+  subtitle.textContent = 'Which subject does this recording belong to?';
+  box.appendChild(subtitle);
+
+  const optionsDiv = document.createElement('div');
+  optionsDiv.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:16px;';
+  options.forEach(function(subj) {
+    const btn = document.createElement('div');
+    btn.style.cssText = 'padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:13px;color:var(--text);transition:all 0.15s;';
+    btn.textContent = subj;
+    btn.onmouseover = function() { this.style.borderColor = 'var(--accent)'; };
+    btn.onmouseout = function() { this.style.borderColor = 'var(--border)'; };
+    btn.onclick = function() {
+      modal.remove();
+      confirmSaveSession(subj, window._lastNotes);
+    };
+    optionsDiv.appendChild(btn);
+  });
+  box.appendChild(optionsDiv);
+
+  const inputRow = document.createElement('div');
+  inputRow.style.cssText = 'display:flex;gap:8px;';
+  const input = document.createElement('input');
+  input.id = 'new-subject-input';
+  input.type = 'text';
+  input.placeholder = 'Or type a new subject...';
+  input.style.cssText = 'flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-accent';
+  saveBtn.style.cssText = 'font-size:13px;padding:9px 14px;white-space:nowrap;';
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = function() {
+    const val = input.value.trim() || detected;
+    modal.remove();
+    confirmSaveSession(val, window._lastNotes);
+  };
+  inputRow.appendChild(input);
+  inputRow.appendChild(saveBtn);
+  box.appendChild(inputRow);
+
+  const skipBtn = document.createElement('button');
+  skipBtn.style.cssText = 'margin-top:12px;width:100%;background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif;';
+  skipBtn.textContent = 'Skip for now';
+  skipBtn.onclick = function() {
+    modal.remove();
+    confirmSaveSession('General', window._lastNotes);
+  };
+  box.appendChild(skipBtn);
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+}
+
+function confirmSaveSession(subject, notes) {
+  const modal = document.getElementById('subject-picker-modal');
+  if (modal) modal.remove();
+  if (!notes) return;
+  const now = new Date();
+  const session = {
+    id: 'session_' + Date.now(),
+    title: notes.title || 'Recording',
+    subject: subject || notes.subject || 'General',
+    speaker: notes.speaker || null,
+    duration: notes.duration || '00:00',
+    type: 'inperson',
+    dateShort: now.toLocaleDateString('en-US', { month:'short', day:'numeric' }),
+    dateFull: now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }) + ', ' + now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' }),
+    notes: notes,
+  };
+  addSession(session);
+}
+
+function toggleExportMenu() {
+  const menu = document.getElementById('export-menu');
+  if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close export menu when clicking outside
+document.addEventListener('click', e => {
+  const wrapper = document.getElementById('export-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    const menu = document.getElementById('export-menu');
+    if (menu) menu.style.display = 'none';
+  }
+});
+
+function buildNotesText(n) {
+  if (!n) return '';
+  const lines = [];
+  lines.push(n.title || 'AURA Notes');
+  lines.push('');
+  lines.push('Subject: ' + (n.subject || 'General'));
+  if (n.speaker) lines.push('Lecturer: ' + n.speaker);
+  lines.push('Duration: ' + (n.duration || ''));
+  lines.push('');
+  lines.push('SUMMARY');
+  lines.push('-------');
+  lines.push(n.summary || '');
+  lines.push('');
+  if (n.detailedNotes && n.detailedNotes.length) {
+    lines.push('DETAILED NOTES');
+    lines.push('--------------');
+    (n.detailedNotes).forEach(note => lines.push(note));
+    lines.push('');
+  }
+  if (n.keyPoints && n.keyPoints.length) {
+    lines.push('KEY POINTS');
+    lines.push('----------');
+    n.keyPoints.forEach((p, i) => lines.push((i+1) + '. ' + p));
+    lines.push('');
+  }
+  if (n.questionsAsked && n.questionsAsked.length) {
+    lines.push('QUESTIONS ASKED');
+    lines.push('---------------');
+    n.questionsAsked.forEach(q => lines.push('• ' + q));
+    lines.push('');
+  }
+  if (n.keyTerms && n.keyTerms.length) {
+    lines.push('KEY TERMS & DEFINITIONS');
+    lines.push('-----------------------');
+    n.keyTerms.forEach(t => {
+      const term = typeof t === 'string' ? t : t.term;
+      const def = typeof t === 'string' ? '' : t.definition;
+      lines.push(term + (def ? ' — ' + def : ''));
+    });
+    lines.push('');
+  }
+  if (n.actionItems && n.actionItems.length) {
+    lines.push('ACTION ITEMS');
+    lines.push('------------');
+    n.actionItems.forEach(a => lines.push('☐ ' + a));
+    lines.push('');
+  }
+  if (n._transcript) {
+    lines.push('FULL TRANSCRIPT');
+    lines.push('---------------');
+    lines.push(n._transcript);
+  }
+  return lines.join('\n');
+}
+
+function exportAsPDF() {
+  const menu = document.getElementById('export-menu');
+  if (menu) menu.style.display = 'none';
+  const n = window._lastNotes;
+  if (!n) return;
+
+  // Create a printable version
+  const printWindow = window.open('', '_blank');
+  const text = buildNotesText(n);
+  const html = `<!DOCTYPE html><html><head><title>${n.title || 'AURA Notes'}</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
+    h1 { font-size: 24px; margin-bottom: 4px; }
+    h2 { font-size: 16px; font-weight: 600; margin-top: 24px; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    .meta { color: #666; font-size: 13px; margin-bottom: 20px; }
+    p { margin-bottom: 12px; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    .transcript { font-size: 13px; color: #555; background: #f9f9f9; padding: 16px; border-radius: 8px; }
+  </style></head><body>
+  <h1>${n.title || 'AURA Notes'}</h1>
+  <div class="meta">${n.subject || ''} ${n.speaker ? '• ' + n.speaker : ''} ${n.duration ? '• ' + n.duration : ''}</div>
+  <h2>Summary</h2><p>${(n.summary || '').replace(/\n/g, '<br>')}</p>
+  ${n.detailedNotes && n.detailedNotes.length ? '<h2>Detailed Notes</h2><ul>' + n.detailedNotes.map(d => '<li>' + d.replace(/^•\s*/, '') + '</li>').join('') + '</ul>' : ''}
+  ${n.keyPoints && n.keyPoints.length ? '<h2>Key Points</h2><ol>' + n.keyPoints.map(p => '<li>' + p + '</li>').join('') + '</ol>' : ''}
+  ${n.questionsAsked && n.questionsAsked.length ? '<h2>Questions Asked</h2><ul>' + n.questionsAsked.map(q => '<li>' + q + '</li>').join('') + '</ul>' : ''}
+  ${n.keyTerms && n.keyTerms.length ? '<h2>Key Terms</h2><ul>' + n.keyTerms.map(t => '<li><strong>' + (typeof t === 'string' ? t : t.term) + '</strong>' + (t.definition ? ' — ' + t.definition : '') + '</li>').join('') + '</ul>' : ''}
+  ${n.actionItems && n.actionItems.length ? '<h2>Action Items</h2><ul>' + n.actionItems.map(a => '<li>☐ ' + a + '</li>').join('') + '</ul>' : ''}
+  ${n._transcript ? '<h2>Full Transcript</h2><div class="transcript">' + n._transcript.replace(/\n/g, '<br>') + '</div>' : ''}
+  </body></html>`;
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 500);
+}
+
+function exportToGoogleDocs() {
+  const menu = document.getElementById('export-menu');
+  if (menu) menu.style.display = 'none';
+  const n = window._lastNotes;
+  if (!n) return;
+  const text = buildNotesText(n);
+  // Copy text then open Google Docs
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Notes copied to clipboard! Google Docs will open — paste with Cmd+V to import your notes.');
+    window.open('https://docs.google.com/document/create', '_blank');
+  }).catch(() => {
+    window.open('https://docs.google.com/document/create', '_blank');
+  });
+}
+
+function exportToPages() {
+  const menu = document.getElementById('export-menu');
+  if (menu) menu.style.display = 'none';
+  const n = window._lastNotes;
+  if (!n) return;
+  const text = buildNotesText(n);
+  // Download as .txt then tell user to open in Pages
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (n.title || 'AURA Notes').replace(/[^a-z0-9]/gi, '_') + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  setTimeout(() => alert('File downloaded! Open it in Pages by right-clicking the file → Open With → Pages.'), 500);
+}
+
+function copyNotes() {
+  if (!checkLimit("exports", "exportsPerMonth")) {
+    showUpgradePrompt("You've used your " + PLANS.free.exportsPerMonth + " free exports this month. Upgrade to Pro for unlimited exports.");
+    return;
+  }
+  incrementUsage("exports");
+  const n = window._lastNotes;
+  if (!n) return;
+  const text = [
+    n.title, '',
+    'Summary:', n.summary, '',
+    'Key Points:', ...(n.keyPoints||[]).map((p,i) => (i+1)+'. '+p), '',
+    'Questions Asked:', ...(n.questionsAsked||[]).map(q => '- '+q), '',
+    'Key Terms:', ...(n.keyTerms||[]).map(t => typeof t==='string' ? t : t.term+' — '+t.definition), '',
+    'Action Items:', ...(n.actionItems||[]).map(a => '☐ '+a),
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('Notes copied to clipboard!'));
+}
+
+function blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result.split(',')[1]);
+    reader.onerror = rej;
+    reader.readAsDataURL(blob);
+  });
+}
+
+function formatTime(s) {
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+
+function animateWave(on) {
+  const bars = document.querySelectorAll('.wave-bar');
+  bars.forEach((bar, i) => {
+    if (on) {
+      const h = Math.floor(Math.random() * 24) + 6;
+      bar.style.setProperty('--h', h + 'px');
+      bar.style.setProperty('--d', (0.5 + Math.random() * 0.8) + 's');
+      bar.style.animationDelay = (i * 0.05) + 's';
+      bar.classList.add('active');
+    } else {
+      bar.classList.remove('active');
+      bar.style.height = '4px';
+    }
+  });
+}
+
+function toggleSwitch(el) { el.classList.toggle('on'); }
+
+
+
+// Language settings
+function onRecordLangChange() {
+  const spoken = document.getElementById('record-spoken-lang');
+  const output = document.getElementById('record-output-lang');
+  if (spoken) localStorage.setItem('lectureapp_spoken_lang', spoken.value);
+  if (output) localStorage.setItem('lectureapp_output_lang', output.value);
+  // Keep settings dropdowns in sync
+  const settingSpoken = document.getElementById('setting-spoken-lang');
+  const settingOutput = document.getElementById('setting-output-lang');
+  if (settingSpoken && spoken) settingSpoken.value = spoken.value;
+  if (settingOutput && output) settingOutput.value = output.value;
+}
+
+function saveLanguageSettings() {
+  const spokenLang = document.getElementById('setting-spoken-lang');
+  const outputLang = document.getElementById('setting-output-lang');
+  if (spokenLang) localStorage.setItem('lectureapp_spoken_lang', spokenLang.value);
+  if (outputLang) localStorage.setItem('lectureapp_output_lang', outputLang.value);
+}
+
+function loadLanguageSettings() {
+  const spokenLang = localStorage.getItem('lectureapp_spoken_lang') || 'en-US';
+  const outputLang = localStorage.getItem('lectureapp_output_lang') || 'English';
+  // Populate both settings and record panel dropdowns
+  ['setting-spoken-lang', 'record-spoken-lang'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = spokenLang;
+  });
+  ['setting-output-lang', 'record-output-lang'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = outputLang;
+  });
+}
+
+let isAnnual = true;
+
+function showCheckout(plan) {
+  document.getElementById('upgrade-plans-view').style.display = 'none';
+  document.getElementById('upgrade-checkout-view').style.display = 'block';
+  document.getElementById('upgrade-success-view').style.display = 'none';
+  // Init Stripe elements when checkout opens
+  setTimeout(() => { try { initStripe(); } catch(e) {} }, 300);
+  const isTeams = plan === 'teams';
+  const price = isAnnual ? (isTeams ? '$9.99/user/mo' : '$5.99/mo') : (isTeams ? '$13.99/user/mo' : '$8.99/mo');
+  const billing = isAnnual ? '7-day free trial · Billed annually' : '7-day free trial · Billed monthly';
+  document.getElementById('checkout-plan-name').textContent = isTeams ? 'AURA Teams' : 'AURA Pro';
+  document.getElementById('checkout-plan-price').textContent = price;
+  document.getElementById('checkout-plan-desc').textContent = billing;
+}
+
+function showPlans() {
+  document.getElementById('upgrade-plans-view').style.display = 'block';
+  document.getElementById('upgrade-checkout-view').style.display = 'none';
+  document.getElementById('upgrade-success-view').style.display = 'none';
+}
+
+function showPaymentSuccess() {
+  document.getElementById('upgrade-plans-view').style.display = 'none';
+  document.getElementById('upgrade-checkout-view').style.display = 'none';
+  document.getElementById('upgrade-success-view').style.display = 'block';
+  const planEl = document.querySelector('.user-plan');
+  if (planEl) planEl.textContent = 'Pro plan';
+}
+
+// ── Stripe integration ───────────────────────────────
+const STRIPE_PK = 'REPLACE_WITH_YOUR_PUBLISHABLE_KEY';
+let stripe = null, cardElement = null;
+
+function initStripe() {
+  if (!window.Stripe || stripe) return;
+  if (!STRIPE_PK || STRIPE_PK === 'REPLACE_WITH_YOUR_PUBLISHABLE_KEY') {
+    console.log('Stripe key not set');
+    return;
+  }
+  try { stripe = Stripe(STRIPE_PK); } catch(e) { console.log('Stripe init failed:', e); return; }
+  const elements = stripe.elements({
+    appearance: {
+      theme: 'night',
+      variables: {
+        colorPrimary: '#f07060',
+        colorBackground: '#141424',
+        colorText: '#f0eeff',
+        colorDanger: '#f87171',
+        fontFamily: 'DM Sans, sans-serif',
+        borderRadius: '9px',
+      }
+    }
+  });
+  cardElement = elements.create('card');
+  cardElement.mount('#stripe-card-element');
+  cardElement.on('change', e => {
+    const err = document.getElementById('stripe-card-error');
+    if (err) {
+      if (e.error) { err.textContent = e.error.message; err.style.display = ''; }
+      else { err.style.display = 'none'; }
+    }
+  });
+}
+
+async function handleExpressPayment(type) {
+  alert('Apple Pay and Google Pay require HTTPS. Please use card payment for now.');
+}
+
+async function handleCardPayment() {
+  const email = document.getElementById('checkout-email')?.value;
+  if (!email) { alert('Please enter your email address.'); return; }
+  if (!stripe || !cardElement) { alert('Payment not ready. Please refresh and try again.'); return; }
+
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  try {
+    const amount = isAnnual ? '599' : '899';
+    const intentRes = await fetch('http://localhost:3000/stripe/v1/payment_intents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'amount=' + amount + '&currency=usd&description=AURA+Pro&receipt_email=' + encodeURIComponent(email) + '&automatic_payment_methods[enabled]=true'
+    });
+
+    const intent = await intentRes.json();
+    if (intent.error) throw new Error(intent.error.message);
+
+    const result = await stripe.confirmCardPayment(intent.client_secret, {
+      payment_method: { card: cardElement, billing_details: { email } }
+    });
+
+    if (result.error) throw new Error(result.error.message);
+    showPaymentSuccess();
+
+  } catch(err) {
+    const errEl = document.getElementById('stripe-card-error');
+    if (errEl) { errEl.textContent = err.message; errEl.style.display = ''; }
+    btn.disabled = false;
+    btn.textContent = 'Start free trial';
+  }
+}
+
+function showStudentDiscount() {
+  const email = prompt('Enter your school email address:');
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  alert('Thanks! We\'ll verify your student status and send a 15% discount code to ' + email + ' within 24 hours.');
+}
+window._recordMode = 'normal';
+
+// Mode configs — all handled silently, user just picks a mode
+const MODE_CONFIG = {
+  'normal':       { gain: 1.0,  maxAlts: 1, correctionLevel: 'standard', label: 'normal'       },
+  'distant':      { gain: 2.5,  maxAlts: 3, correctionLevel: 'aggressive', label: 'distant'     },
+  'lecture-hall': { gain: 3.5,  maxAlts: 3, correctionLevel: 'aggressive', label: 'lecture hall' },
+};
+
+function setRecordMode(mode) {
+  window._recordMode = mode;
+  const ids = ['mode-normal', 'mode-distant', 'mode-lecture-hall'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.border = '1px solid var(--border)';
+    el.style.background = 'transparent';
+    el.querySelector('p').style.color = 'var(--text2)';
+  });
+  const active = document.getElementById('mode-' + mode);
+  if (active) {
+    active.style.border = '1px solid var(--accent)';
+    active.style.background = 'var(--accent-glow)';
+    active.querySelector('p').style.color = 'var(--accent)';
+  }
+}
+
+function toggleBilling() {
+  isAnnual = !isAnnual;
+  const thumb = document.getElementById('billing-thumb');
+  if (thumb) thumb.style.transform = isAnnual ? 'translateX(22px)' : 'translateX(0px)';
+  const proPrice = document.getElementById('pro-price');
+  const proBilling = document.getElementById('pro-billing');
+  const teamsPrice = document.getElementById('teams-price');
+  const teamsBilling = document.getElementById('teams-billing');
+  if (proPrice) {
+    proPrice.textContent = isAnnual ? '$5.99' : '$8.99';
+    proBilling.textContent = isAnnual ? 'Billed $47.88/year' : 'Billed monthly';
+    teamsPrice.textContent = isAnnual ? '$9.99' : '$13.99';
+    teamsBilling.textContent = isAnnual ? 'Billed $83.88/year' : 'Billed monthly';
+  }
+}
+
+function toggleProfileMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('profile-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function closeProfileMenu() {
+  const menu = document.getElementById('profile-menu');
+  if (menu) menu.style.display = 'none';
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', () => closeProfileMenu());
+
+function connectMeeting(card, name) {
+  card.classList.add('connected');
+  card.querySelector('.status-dot').className = 'status-dot connected';
+  card.querySelector('p:last-child').innerHTML = '<span class="status-dot connected"></span><span style="color:var(--green);font-size:11px">Connected</span>';
+}
+
+function setCaptureMethod(method) {
+  const tabBtn = document.getElementById('capture-tab');
+  const intBtn = document.getElementById('capture-integration');
+  const tabSection = document.getElementById('tab-capture-section');
+  const intSection = document.getElementById('integration-section');
+  if (method === 'tab') {
+    tabBtn.style.border = '1px solid var(--accent)';
+    tabBtn.style.background = 'var(--accent-glow)';
+    tabBtn.querySelector('p').style.color = 'var(--accent)';
+    intBtn.style.border = '1px solid var(--border)';
+    intBtn.style.background = 'transparent';
+    intBtn.querySelector('p').style.color = 'var(--text2)';
+    tabSection.style.display = '';
+    intSection.style.display = 'none';
+  } else {
+    intBtn.style.border = '1px solid var(--accent)';
+    intBtn.style.background = 'var(--accent-glow)';
+    intBtn.querySelector('p').style.color = 'var(--accent)';
+    tabBtn.style.border = '1px solid var(--border)';
+    tabBtn.style.background = 'transparent';
+    tabBtn.querySelector('p').style.color = 'var(--text2)';
+    tabSection.style.display = 'none';
+    intSection.style.display = '';
+  }
+}
+
+let isOnlineRecording = false;
+let onlineTimerInterval, onlineSeconds = 0;
+let tabStream = null, onlineRecognition = null;
+
+async function toggleOnlineRecord() {
+  if (!isOnlineRecording) {
+    try {
+      // Request tab/screen capture with audio
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,  // required by browser even if we only want audio
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          sampleRate: 44100
+        }
+      });
+
+      // Check if audio track exists
+      const audioTracks = stream.getAudioTracks();
+      if (!audioTracks.length) {
+        stream.getTracks().forEach(t => t.stop());
+        document.getElementById('online-status').textContent = 'No audio detected';
+        document.getElementById('online-sub').textContent = 'Make sure "Share tab audio" was checked when selecting the tab';
+        document.getElementById('online-sub').style.color = 'var(--red)';
+        setTimeout(() => {
+          document.getElementById('online-sub').style.color = '';
+          document.getElementById('online-status').textContent = 'Ready to capture';
+          document.getElementById('online-sub').textContent = 'Click to share your meeting tab';
+        }, 5000);
+        return;
+      }
+
+      tabStream = stream;
+      isOnlineRecording = true;
+
+      // Start UI
+      document.getElementById('online-record-btn').classList.add('recording');
+      document.getElementById('online-record-ring').classList.add('active');
+      document.getElementById('online-play-icon').style.display = 'none';
+      document.getElementById('online-stop-icon').style.display = '';
+      document.getElementById('online-status').textContent = 'Recording meeting...';
+      document.getElementById('online-sub').textContent = 'Transcribing in real time — stop when done';
+      document.getElementById('online-live-transcript').style.display = '';
+      document.getElementById('online-timer').style.display = '';
+
+      onlineSeconds = 0;
+      onlineTimerInterval = setInterval(() => {
+        onlineSeconds++;
+        const m = String(Math.floor(onlineSeconds/60)).padStart(2,'0');
+        const s = String(onlineSeconds%60).padStart(2,'0');
+        document.getElementById('online-timer').textContent = m + ':' + s;
+      }, 1000);
+
+      // Use Web Speech API with the tab audio routed through AudioContext
+      const audioCtx = new AudioContext();
+      const source = audioCtx.createMediaStreamSource(stream);
+      const dest = audioCtx.createMediaStreamDestination();
+      source.connect(dest);
+
+      // Start speech recognition on captured audio
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      onlineRecognition = new SR();
+      onlineRecognition.continuous = true;
+      onlineRecognition.interimResults = true;
+      onlineRecognition.lang = localStorage.getItem('lectureapp_spoken_lang') || 'en-US';
+      onlineRecognition.maxAlternatives = 3;
+
+      let onlineLiveTranscript = '';
+      let onlineSegments = [];
+      let onlineLastTime = Date.now();
+      let onlineCurrentBurst = '';
+      let onlineSpeakerCounts = {};
+      let onlineSpeakerList = [];
+      let onlineLastSpeaker = null;
+
+      function getOnlineSpeaker(text, gap) {
+        const words = text.trim().split(/\s+/).length;
+        const isShort = words <= 8;
+        const isLongGap = gap > 2000;
+        if (onlineSpeakerList.length === 0) {
+          const id = 'ospk_0';
+          onlineSpeakerList.push(id);
+          onlineSpeakerCounts[id] = words;
+          return id;
+        }
+        // Try to match last speaker if gap is short
+        if (gap < 1200 && onlineLastSpeaker) {
+          onlineSpeakerCounts[onlineLastSpeaker] = (onlineSpeakerCounts[onlineLastSpeaker] || 0) + words;
+          return onlineLastSpeaker;
+        }
+        // New turn — check if new speaker
+        if (isLongGap || (isShort && gap > 1500)) {
+          // Check if matches a previous speaker pattern
+          let matched = null;
+          onlineSpeakerList.forEach(id => {
+            if (id === onlineLastSpeaker) return;
+            const prevAvg = (onlineSpeakerCounts[id] || 0) / Math.max(1, onlineSpeakerList.indexOf(id) + 1);
+            if (Math.abs(words - prevAvg) < 5) matched = id;
+          });
+          if (matched) {
+            onlineSpeakerCounts[matched] = (onlineSpeakerCounts[matched] || 0) + words;
+            return matched;
+          }
+          const id = 'ospk_' + onlineSpeakerList.length;
+          onlineSpeakerList.push(id);
+          onlineSpeakerCounts[id] = words;
+          return id;
+        }
+        if (onlineLastSpeaker) {
+          onlineSpeakerCounts[onlineLastSpeaker] = (onlineSpeakerCounts[onlineLastSpeaker] || 0) + words;
+          return onlineLastSpeaker;
+        }
+        return onlineSpeakerList[0];
+      }
+
+      function getOnlineLabel(id) {
+        let maxWords = 0, lecturerId = null;
+        onlineSpeakerList.forEach(sid => {
+          if ((onlineSpeakerCounts[sid] || 0) > maxWords) { maxWords = onlineSpeakerCounts[sid]; lecturerId = sid; }
+        });
+        if (id === lecturerId) return { label: 'Lecturer', color: 'var(--amber)' };
+        const idx = onlineSpeakerList.filter(s => s !== lecturerId).indexOf(id);
+        const colors = ['var(--green)', 'var(--blue)', 'var(--pink)', '#c084fc'];
+        return { label: 'Student ' + (idx + 1), color: colors[idx] || 'var(--text2)' };
+      }
+
+      function renderOnlineTranscript(interim) {
+        const body = document.getElementById('online-transcript-body');
+        if (!body) return;
+        let html = onlineSegments.map(seg => {
+          const info = getOnlineLabel(seg.speakerId);
+          return `<div style="margin-bottom:8px;line-height:1.6;">
+            <span style="color:${info.color};font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-right:8px;">${info.label}</span>
+            <span style="color:var(--text);font-size:13px;">${seg.text}</span>
+          </div>`;
+        }).join('');
+        if (interim) html += `<div style="color:var(--text3);font-size:13px;font-style:italic;">${interim}</div>`;
+        if (!html) html = '<span style="color:var(--text3);font-style:italic;font-size:13px;">Listening to meeting audio...</span>';
+        body.innerHTML = html;
+        body.scrollTop = body.scrollHeight;
+      }
+
+      onlineRecognition.onresult = e => {
+        const now = Date.now();
+        const gap = now - onlineLastTime;
+        let interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) {
+            let text = e.results[i][0].transcript.trim();
+            if (!text) continue;
+            text = text.charAt(0).toUpperCase() + text.slice(1);
+            if (!/[.!?]$/.test(text)) text += '.';
+            if (gap > 1200 && onlineCurrentBurst.trim()) {
+              const sid = getOnlineSpeaker(onlineCurrentBurst, gap);
+              onlineSegments.push({ speakerId: sid, text: onlineCurrentBurst.trim() });
+              onlineLiveTranscript = onlineSegments.map(s => '[' + getOnlineLabel(s.speakerId).label + '] ' + s.text).join(' ');
+              onlineCurrentBurst = '';
+              onlineLastSpeaker = sid;
+            }
+            onlineCurrentBurst += ' ' + text;
+            onlineLastTime = now;
+          } else {
+            interim += e.results[i][0].transcript;
+          }
+        }
+        renderOnlineTranscript(interim);
+      };
+
+      onlineRecognition.onend = () => {
+        if (isOnlineRecording) try { onlineRecognition.start(); } catch(e) {}
+      };
+
+      onlineRecognition.onerror = e => {
+        if (['no-speech','aborted'].includes(e.error)) return;
+      };
+
+      onlineRecognition.start();
+
+      // Stop if screen share ends
+      stream.getVideoTracks()[0].onended = () => {
+        if (isOnlineRecording) stopOnlineRecord(onlineLiveTranscript);
+      };
+
+      // Store transcript ref for stop
+      window._onlineTranscriptRef = () => {
+        if (onlineCurrentBurst.trim()) {
+          const sid = getOnlineSpeaker(onlineCurrentBurst, 9999);
+          onlineSegments.push({ speakerId: sid, text: onlineCurrentBurst.trim() });
+          onlineLiveTranscript = onlineSegments.map(s => '[' + getOnlineLabel(s.speakerId).label + '] ' + s.text).join(' ');
+        }
+        return onlineLiveTranscript;
+      };
+
+    } catch(e) {
+      if (e.name === 'NotAllowedError') {
+        document.getElementById('online-status').textContent = 'Screen share cancelled';
+        document.getElementById('online-sub').textContent = 'Click to try again';
+      } else {
+        document.getElementById('online-status').textContent = 'Error: ' + e.message;
+      }
+    }
+  } else {
+    const transcript = window._onlineTranscriptRef ? window._onlineTranscriptRef() : '';
+    stopOnlineRecord(transcript);
+  }
+}
+
+function stopOnlineRecord(transcript) {
+  isOnlineRecording = false;
+  clearInterval(onlineTimerInterval);
+  if (tabStream) { tabStream.getTracks().forEach(t => t.stop()); tabStream = null; }
+  if (onlineRecognition) { onlineRecognition.onend = null; onlineRecognition.stop(); }
+
+  document.getElementById('online-record-btn').classList.remove('recording');
+  document.getElementById('online-record-ring').classList.remove('active');
+  document.getElementById('online-play-icon').style.display = '';
+  document.getElementById('online-stop-icon').style.display = 'none';
+  document.getElementById('online-status').textContent = 'Processing...';
+  document.getElementById('online-sub').textContent = 'Generating notes from your meeting...';
+  document.getElementById('online-timer').style.display = 'none';
+
+  if (transcript && transcript.trim()) {
+    // Reuse the same processTranscript pipeline
+    liveTranscript = transcript;
+    seconds = onlineSeconds;
+    setTimeout(() => processTranscript(transcript.trim()), 300);
+  } else {
+    document.getElementById('online-status').textContent = 'Ready to capture';
+    document.getElementById('online-sub').textContent = 'No audio was captured. Make sure Share tab audio was checked.';
+  }
+}
+// ── App initialization ────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  renderSessionsTree();
+  renderSessionsPage();
+  renderRecentSessions();
+  loadLanguageSettings();
+  showUsageBadge();
+  enforcePlanUI();
+  setTimeout(() => requestMicOnce(), 1000);
+
+  // Debug: check if localStorage is working
+  localStorage.setItem('aura_test', '1');
+  const test = localStorage.getItem('aura_test');
+  console.log('localStorage working:', test === '1');
+  console.log('Saved sessions:', getSessions().length);
+});
+</script>
+</body>
+</html>
