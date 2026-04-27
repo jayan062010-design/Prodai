@@ -2068,6 +2068,9 @@ async function processTranscript(transcript) {
 
     // Step 1: Context-aware transcript correction
     const fullNotes = getPlanLimits().fullNotes;
+    const transcriptForNotes = transcript.length > 40000
+      ? transcript.substring(0, 40000) + '... [truncated]'
+      : transcript;
     const notesRes = await fetch('http://localhost:3000/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
