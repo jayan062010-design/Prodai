@@ -2250,6 +2250,47 @@ function renderNotes(n) {
       </div>
     </div>`;
 }
+  // Build AI chat section
+  setTimeout(() => {
+    const notesEl = document.getElementById('page-notes');
+    if (!notesEl) return;
+    let chat = document.getElementById('lecture-chat');
+    if (chat) chat.remove();
+    const chatDiv = document.createElement('div');
+    chatDiv.id = 'lecture-chat';
+    chatDiv.style.cssText = 'margin:32px 0 0 0;border-top:1px solid var(--border);padding-top:24px;';
+    const title = document.createElement('h3');
+    title.style.cssText = 'font-family:Syne,sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;color:var(--text);';
+    title.textContent = 'Chat with AI';
+    const sub = document.createElement('p');
+    sub.style.cssText = 'font-size:13px;color:var(--text2);margin-bottom:16px;';
+    sub.textContent = 'Ask anything about this lecture';
+    const msgArea = document.createElement('div');
+    msgArea.id = 'chat-messages';
+    msgArea.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-bottom:16px;max-height:400px;overflow-y:auto;';
+    const inputRow = document.createElement('div');
+    inputRow.style.cssText = 'display:flex;gap:8px;';
+    const inp = document.createElement('input');
+    inp.id = 'chat-input';
+    inp.type = 'text';
+    inp.placeholder = 'Ask about this lecture...';
+    inp.style.cssText = 'flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;outline:none;';
+    inp.onkeydown = function(e) { if (e.key === 'Enter') sendChatMessage(); };
+    const sendBtn = document.createElement('button');
+    sendBtn.className = 'btn btn-accent';
+    sendBtn.style.cssText = 'padding:10px 18px;font-size:13px;white-space:nowrap;';
+    sendBtn.textContent = 'Send';
+    sendBtn.onclick = sendChatMessage;
+    inputRow.appendChild(inp);
+    inputRow.appendChild(sendBtn);
+    chatDiv.appendChild(title);
+    chatDiv.appendChild(sub);
+    chatDiv.appendChild(msgArea);
+    chatDiv.appendChild(inputRow);
+    notesEl.appendChild(chatDiv);
+  }, 100);
+
+  
 
 function showSubjectPicker(notes, duration) {
   const existing = [...new Set(getSessions().map(s => s.subject).filter(Boolean))];
@@ -2476,6 +2517,75 @@ function exportToPages() {
   a.click();
   URL.revokeObjectURL(url);
   setTimeout(() => alert('File downloaded! Open it in Pages by right-clicking the file → Open With → Pages.'), 500);
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const messages = document.getElementById('chat-messages');
+  if (!input || !messages) return;
+  const question = input.value.trim();
+  if (!question) return;
+  input.value = '';
+
+  // User bubble
+  const userDiv = document.createElement('div');
+  userDiv.style.cssText = 'display:flex;justify-content:flex-end;';
+  const userBubble = document.createElement('div');
+  userBubble.style.cssText = 'background:var(--accent);color:white;padding:10px 14px;border-radius:12px 12px 2px 12px;font-size:13px;max-width:80%;line-height:1.5;';
+  userBubble.textContent = question;
+  userDiv.appendChild(userBubble);
+  messages.appendChild(userDiv);
+  messages.scrollTop = messages.scrollHeight;
+
+  // Loading bubble
+  const loadDiv = document.createElement('div');
+  loadDiv.id = 'chat-loading';
+  loadDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start;';
+  loadDiv.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-glow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--accent);font-weight:700;flex-shrink:0;">AI</div><div style="background:var(--bg3);border:1px solid var(--border);padding:10px 14px;border-radius:12px 12px 12px 2px;font-size:13px;color:var(--text2);">Thinking...</div>';
+  messages.appendChild(loadDiv);
+  messages.scrollTop = messages.scrollHeight;
+
+  try {
+    const n = window._lastNotes || {};
+    const context = [
+      n.title ? 'Title: ' + n.title : '',
+      n.subject ? 'Subject: ' + n.subject : '',
+      n.summary ? 'Summary: ' + n.summary : '',
+      n.keyPoints ? 'Key Points: ' + (n.keyPoints||[]).join('; ') : '',
+      n.keyTerms ? 'Key Terms: ' + (n.keyTerms||[]).map(function(t){return typeof t==='string'?t:t.term+': '+t.definition;}).join('; ') : '',
+      n.detailedNotes ? 'Detailed Notes: ' + (n.detailedNotes||[]).join(' ') : '',
+    ].filter(Boolean).join('\n');
+    const transcript = n._transcript ? n._transcript.substring(0, 8000) : '';
+
+    const res = await fetch('http://localhost:3000/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: 'You are a helpful study assistant for Prod.ai. Answer questions about the lecture based on the notes and transcript. Be concise and clear. If the answer is not in the content say so.\n\nNOTES:\n' + context + '\n\nTRANSCRIPT:\n' + transcript,
+        messages: [{ role: 'user', content: question }]
+      })
+    });
+    const data = await res.json();
+    const answer = (data.content && data.content[0]) ? data.content[0].text : 'Sorry, no response received.';
+
+    const loadEl = document.getElementById('chat-loading');
+    if (loadEl) loadEl.remove();
+
+    const aiDiv = document.createElement('div');
+    aiDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-start;';
+    aiDiv.innerHTML = '<div style="width:28px;height:28px;border-radius:50%;background:var(--accent-glow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--accent);font-weight:700;flex-shrink:0;">AI</div><div style="background:var(--bg3);border:1px solid var(--border);padding:10px 14px;border-radius:12px 12px 12px 2px;font-size:13px;color:var(--text);line-height:1.6;max-width:85%;">' + answer.replace(/\n/g,'<br>') + '</div>';
+    messages.appendChild(aiDiv);
+    messages.scrollTop = messages.scrollHeight;
+  } catch(e) {
+    const loadEl = document.getElementById('chat-loading');
+    if (loadEl) loadEl.remove();
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText = 'font-size:12px;color:var(--red);padding:4px 8px;';
+    errDiv.textContent = 'Error: ' + e.message;
+    messages.appendChild(errDiv);
+  }
 }
 
 function copyNotes() {
