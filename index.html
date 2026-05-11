@@ -2106,10 +2106,7 @@ async function processTranscript(transcript) {
     window._lastNotes = notes;
     renderNotes(notes);
     showPage('notes');
-    // Auto-save immediately under detected subject so nothing is lost
-    const autoSubject = notes.subject || 'General';
-    confirmSaveSession(autoSubject, notes);
-    // Then show subject picker so user can reassign if needed
+    // Show subject picker to save session
     setTimeout(() => showSubjectPicker(notes, duration), 500);
     document.getElementById('record-status').textContent = 'Ready to record';
     document.getElementById('record-sub').textContent = 'Tap the mic to start capturing your lecture';
@@ -2155,11 +2152,11 @@ function renderNotes(n) {
   ).join('');
 
   const termsHTML = (n.keyTerms || []).map(t => {
-    const term = typeof t === 'string' ? t : t.term;
-    const def = typeof t === 'string' ? '' : t.definition;
-    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;">
-      <span style="color:var(--accent);font-weight:500;">${term}</span>
-      ${def ? `<span style="color:var(--text3);margin:0 6px;">—</span><span style="color:var(--text2);">${def}</span>` : ''}
+    const term = typeof t === 'string' ? t : (t.term || t);
+    const def = (typeof t === 'object' && t !== null) ? (t.definition || t.def || '') : '';
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px;">
+      <span style="color:var(--accent);font-weight:600;">${term}</span>
+      ${def ? `<div style="color:var(--text2);margin-top:4px;line-height:1.5;">${def}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -3107,6 +3104,17 @@ function stopOnlineRecord(transcript) {
 }
 // ── App initialization ────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  // Auto-deduplicate sessions on load
+  try {
+    const allSessions = JSON.parse(localStorage.getItem('lectureapp_sessions') || '[]');
+    const seen = {};
+    const deduped = allSessions.filter(s => { if (seen[s.id]) return false; seen[s.id] = true; return true; });
+    if (deduped.length !== allSessions.length) {
+      localStorage.setItem('lectureapp_sessions', JSON.stringify(deduped));
+      console.log('Removed', allSessions.length - deduped.length, 'duplicate sessions');
+    }
+  } catch(e) {}
+
   renderSessionsTree();
   renderSessionsPage();
   renderRecentSessions();
