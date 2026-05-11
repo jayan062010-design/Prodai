@@ -1903,6 +1903,7 @@ function openSession(id) {
   window._lastNotes = session.notes;
   renderNotes(session.notes);
   showPage('notes');
+  appendChatToNotes();
 }
 
 function showPage(name) {
@@ -2250,45 +2251,7 @@ function renderNotes(n) {
       </div>
     </div>`;
 
-  // Append AI chat section after notes
-  setTimeout(function() {
-    const notesEl = document.getElementById('page-notes');
-    if (!notesEl) return;
-    let existing = document.getElementById('lecture-chat');
-    if (existing) existing.remove();
-    const chatDiv = document.createElement('div');
-    chatDiv.id = 'lecture-chat';
-    chatDiv.style.cssText = 'margin:32px 16px 32px 16px;border-top:1px solid var(--border);padding-top:24px;';
-    const title = document.createElement('h3');
-    title.style.cssText = 'font-family:Syne,sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;color:var(--text);';
-    title.textContent = 'Chat with AI';
-    const sub = document.createElement('p');
-    sub.style.cssText = 'font-size:13px;color:var(--text2);margin-bottom:16px;';
-    sub.textContent = 'Ask anything about this lecture';
-    const msgArea = document.createElement('div');
-    msgArea.id = 'chat-messages';
-    msgArea.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-bottom:16px;max-height:400px;overflow-y:auto;';
-    const inputRow = document.createElement('div');
-    inputRow.style.cssText = 'display:flex;gap:8px;';
-    const inp = document.createElement('input');
-    inp.id = 'chat-input';
-    inp.type = 'text';
-    inp.placeholder = 'Ask about this lecture...';
-    inp.style.cssText = 'flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;outline:none;';
-    inp.onkeydown = function(e) { if (e.key === 'Enter') sendChatMessage(); };
-    const sendBtn = document.createElement('button');
-    sendBtn.className = 'btn btn-accent';
-    sendBtn.style.cssText = 'padding:10px 18px;font-size:13px;white-space:nowrap;';
-    sendBtn.textContent = 'Send';
-    sendBtn.onclick = sendChatMessage;
-    inputRow.appendChild(inp);
-    inputRow.appendChild(sendBtn);
-    chatDiv.appendChild(title);
-    chatDiv.appendChild(sub);
-    chatDiv.appendChild(msgArea);
-    chatDiv.appendChild(inputRow);
-    notesEl.appendChild(chatDiv);
-  }, 200);
+  appendChatToNotes();
 }
 function showSubjectPicker(notes, duration) {
   const existing = [...new Set(getSessions().map(s => s.subject).filter(Boolean))];
@@ -2515,6 +2478,47 @@ function exportToPages() {
   a.click();
   URL.revokeObjectURL(url);
   setTimeout(() => alert('File downloaded! Open it in Pages by right-clicking the file → Open With → Pages.'), 500);
+}
+
+function appendChatToNotes() {
+  setTimeout(function() {
+    const notesEl = document.getElementById('page-notes');
+    if (!notesEl) return;
+    let existing = document.getElementById('lecture-chat');
+    if (existing) existing.remove();
+    const chatDiv = document.createElement('div');
+    chatDiv.id = 'lecture-chat';
+    chatDiv.style.cssText = 'margin:32px 16px 32px 16px;border-top:1px solid var(--border);padding-top:24px;';
+    const title = document.createElement('h3');
+    title.style.cssText = 'font-family:Syne,sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;color:var(--text);';
+    title.textContent = 'Chat with AI';
+    const sub = document.createElement('p');
+    sub.style.cssText = 'font-size:13px;color:var(--text2);margin-bottom:16px;';
+    sub.textContent = 'Ask anything about this lecture';
+    const msgArea = document.createElement('div');
+    msgArea.id = 'chat-messages';
+    msgArea.style.cssText = 'display:flex;flex-direction:column;gap:12px;margin-bottom:16px;max-height:400px;overflow-y:auto;';
+    const inputRow = document.createElement('div');
+    inputRow.style.cssText = 'display:flex;gap:8px;';
+    const inp = document.createElement('input');
+    inp.id = 'chat-input';
+    inp.type = 'text';
+    inp.placeholder = 'Ask about this lecture...';
+    inp.style.cssText = 'flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;outline:none;';
+    inp.onkeydown = function(e) { if (e.key === 'Enter') sendChatMessage(); };
+    const sendBtn = document.createElement('button');
+    sendBtn.className = 'btn btn-accent';
+    sendBtn.style.cssText = 'padding:10px 18px;font-size:13px;white-space:nowrap;';
+    sendBtn.textContent = 'Send';
+    sendBtn.onclick = sendChatMessage;
+    inputRow.appendChild(inp);
+    inputRow.appendChild(sendBtn);
+    chatDiv.appendChild(title);
+    chatDiv.appendChild(sub);
+    chatDiv.appendChild(msgArea);
+    chatDiv.appendChild(inputRow);
+    notesEl.appendChild(chatDiv);
+  }, 300);
 }
 
 async function sendChatMessage() {
