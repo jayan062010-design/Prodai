@@ -2249,16 +2249,16 @@ function renderNotes(n) {
         <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;color:var(--text2);line-height:2;max-height:200px;overflow-y:auto;">${(n._transcript || 'No transcript available.').replace(/\[pause\]/g, '<span style="color:var(--text3);font-size:11px;padding:0 4px;background:var(--bg4);border-radius:3px;margin:0 3px;">⏸ pause</span>')}</div>
       </div>
     </div>`;
-}
-  // Build AI chat section
-  setTimeout(() => {
+
+  // Append AI chat section after notes
+  setTimeout(function() {
     const notesEl = document.getElementById('page-notes');
     if (!notesEl) return;
-    let chat = document.getElementById('lecture-chat');
-    if (chat) chat.remove();
+    let existing = document.getElementById('lecture-chat');
+    if (existing) existing.remove();
     const chatDiv = document.createElement('div');
     chatDiv.id = 'lecture-chat';
-    chatDiv.style.cssText = 'margin:32px 0 0 0;border-top:1px solid var(--border);padding-top:24px;';
+    chatDiv.style.cssText = 'margin:32px 16px 32px 16px;border-top:1px solid var(--border);padding-top:24px;';
     const title = document.createElement('h3');
     title.style.cssText = 'font-family:Syne,sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;color:var(--text);';
     title.textContent = 'Chat with AI';
@@ -2288,10 +2288,8 @@ function renderNotes(n) {
     chatDiv.appendChild(msgArea);
     chatDiv.appendChild(inputRow);
     notesEl.appendChild(chatDiv);
-  }, 100);
-
-  
-
+  }, 200);
+}
 function showSubjectPicker(notes, duration) {
   const existing = [...new Set(getSessions().map(s => s.subject).filter(Boolean))];
   const detected = notes.subject || 'General';
