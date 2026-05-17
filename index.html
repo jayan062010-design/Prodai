@@ -1581,7 +1581,7 @@ async function transcribeWithWhisper(blob) {
 
     let response;
     try {
-      response = await fetch('http://localhost:3000/whisper/v1/audio/transcriptions', {
+      response = await fetch('https://prodai-production.up.railway.app/whisper/v1/audio/transcriptions', {
         method: 'POST',
         body: formData
       });
@@ -2072,7 +2072,7 @@ async function processTranscript(transcript) {
     const transcriptForNotes = transcript.length > 40000
       ? transcript.substring(0, 40000) + '... [truncated]'
       : transcript;
-    const notesRes = await fetch('http://localhost:3000/v1/messages', {
+    const notesRes = await fetch('https://prodai-production.up.railway.app/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2556,7 +2556,7 @@ async function sendChatMessage() {
     ].filter(Boolean).join('\n');
     const transcript = n._transcript ? n._transcript.substring(0, 8000) : '';
 
-    const res = await fetch('http://localhost:3000/v1/messages', {
+    const res = await fetch('https://prodai-production.up.railway.app/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2753,7 +2753,7 @@ async function handleCardPayment() {
 
   try {
     const amount = isAnnual ? '599' : '899';
-    const intentRes = await fetch('http://localhost:3000/stripe/v1/payment_intents', {
+    const intentRes = await fetch('https://prodai-production.up.railway.app/stripe/v1/payment_intents', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'amount=' + amount + '&currency=usd&description=AURA+Pro&receipt_email=' + encodeURIComponent(email) + '&automatic_payment_methods[enabled]=true'
