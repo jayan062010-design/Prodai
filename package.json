@@ -1,13 +1,1 @@
-{
-  "name": "aura",
-  "version": "1.0.0",
-  "description": "AURA - AI Lecture Notes",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "build": "electron-builder"
-  },
-  "devDependencies": {
-    "electron": "^34.0.0"
-  }
-}
+{"name":"prodai-server","version":"1.0.0","main":"server.js","scripts":{"start":"node server.js"}}
