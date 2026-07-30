@@ -1864,6 +1864,14 @@ function renderSessionsPage() {
       const tag = document.createElement('span');
       tag.className = 'tag tag-purple';
       tag.textContent = 'Notes ready';
+      const move = document.createElement('div');
+      move.style.cssText = 'padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--text3);font-size:12px;';
+      move.textContent = '📁';
+      move.title = 'Move to subject';
+      move.onclick = function(e) {
+        e.stopPropagation();
+        showMoveSubjectPicker(s.id);
+      };
       const del = document.createElement('div');
       del.style.cssText = 'padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--text3);font-size:11px;';
       del.textContent = '✕';
@@ -1873,6 +1881,7 @@ function renderSessionsPage() {
         deleteSession(s.id);
       };
       right.appendChild(tag);
+      right.appendChild(move);
       right.appendChild(del);
       item.appendChild(icon);
       item.appendChild(body);
@@ -2587,6 +2596,11 @@ function renderSubjectsPage() {
     if (!subjectMap[subj]) subjectMap[subj] = [];
     subjectMap[subj].push(s);
   });
+  // Include manually-created subjects that don't have recordings yet
+  const pendingSubjects = JSON.parse(localStorage.getItem('lectureapp_pending_subjects') || '[]');
+  pendingSubjects.forEach(function(subj) {
+    if (!subjectMap[subj]) subjectMap[subj] = [];
+  });
   const emojis = {'Golf':'⛳','Biology':'🧬','Biology 101':'🧬','CS':'💻','Math':'🧮','History':'🏛️','Psychology':'🧠','Chemistry':'⚗️','General':'📁','Physics':'⚛️','English':'📝','Economics':'📈'};
   grid.innerHTML = '';
   const sortSelect = document.getElementById('subjects-sort');
@@ -2650,6 +2664,157 @@ function renderSubjectsPage() {
   addCard.onmouseout = function() { this.style.background = 'transparent'; };
   addCard.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2" style="width:24px;height:24px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><p style="font-size:13px;color:var(--text3);">Add subject</p>';
   grid.appendChild(addCard);
+}
+
+function addSubject() {
+  const modal = document.createElement('div');
+  modal.id = 'add-subject-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:28px;width:340px;max-width:90vw;';
+
+  const title = document.createElement('h3');
+  title.style.cssText = 'font-family:Syne,sans-serif;font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text);';
+  title.textContent = 'New subject';
+  box.appendChild(title);
+
+  const subtitle = document.createElement('p');
+  subtitle.style.cssText = 'font-size:13px;color:var(--text2);margin-bottom:18px;';
+  subtitle.textContent = 'Give your new subject a name';
+  box.appendChild(subtitle);
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'e.g. Chemistry, Spanish, Econ 101...';
+  input.style.cssText = 'width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;margin-bottom:16px;outline:none;';
+  box.appendChild(input);
+
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn btn-ghost';
+  cancelBtn.style.cssText = 'flex:1;font-size:13px;padding:10px;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function() { modal.remove(); };
+
+  const createBtn = document.createElement('button');
+  createBtn.className = 'btn btn-accent';
+  createBtn.style.cssText = 'flex:1;font-size:13px;padding:10px;';
+  createBtn.textContent = 'Create';
+  createBtn.onclick = function() {
+    const name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    const pending = JSON.parse(localStorage.getItem('lectureapp_pending_subjects') || '[]');
+    if (!pending.includes(name)) {
+      pending.push(name);
+      localStorage.setItem('lectureapp_pending_subjects', JSON.stringify(pending));
+    }
+    modal.remove();
+    renderSubjectsPage();
+  };
+
+  input.onkeydown = function(e) { if (e.key === 'Enter') createBtn.click(); };
+
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(createBtn);
+  box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  setTimeout(function() { input.focus(); }, 50);
+}
+
+function showMoveSubjectPicker(sessionId) {
+  const sessions = getSessions();
+  const session = sessions.find(function(s) { return s.id === sessionId; });
+  if (!session) return;
+
+  const existingSubjects = [...new Set(sessions.map(function(s) { return s.subject; }).filter(Boolean))];
+  const pendingSubjects = JSON.parse(localStorage.getItem('lectureapp_pending_subjects') || '[]');
+  const allSubjects = [...new Set([...existingSubjects, ...pendingSubjects, 'General'])]
+    .filter(function(subj) { return subj !== session.subject; });
+
+  const modal = document.createElement('div');
+  modal.id = 'move-subject-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:28px;width:360px;max-width:90vw;';
+
+  const title = document.createElement('h3');
+  title.style.cssText = 'font-family:Syne,sans-serif;font-size:17px;font-weight:700;margin-bottom:4px;color:var(--text);';
+  title.textContent = 'Move recording';
+  box.appendChild(title);
+
+  const subtitle = document.createElement('p');
+  subtitle.style.cssText = 'font-size:13px;color:var(--text2);margin-bottom:18px;';
+  subtitle.textContent = 'Currently in ' + (session.subject || 'General') + ' — move to:';
+  box.appendChild(subtitle);
+
+  const optionsDiv = document.createElement('div');
+  optionsDiv.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-bottom:16px;max-height:240px;overflow-y:auto;';
+  allSubjects.forEach(function(subj) {
+    const btn = document.createElement('div');
+    btn.style.cssText = 'padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:13px;color:var(--text);transition:all 0.15s;';
+    btn.textContent = subj;
+    btn.onmouseover = function() { this.style.borderColor = 'var(--accent)'; };
+    btn.onmouseout = function() { this.style.borderColor = 'var(--border)'; };
+    btn.onclick = function() {
+      moveSessionToSubject(sessionId, subj);
+      modal.remove();
+    };
+    optionsDiv.appendChild(btn);
+  });
+  if (allSubjects.length === 0) {
+    const empty = document.createElement('p');
+    empty.style.cssText = 'font-size:13px;color:var(--text3);text-align:center;padding:12px;';
+    empty.textContent = 'No other subjects yet.';
+    optionsDiv.appendChild(empty);
+  }
+  box.appendChild(optionsDiv);
+
+  const inputRow = document.createElement('div');
+  inputRow.style.cssText = 'display:flex;gap:8px;';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Or type a new subject...';
+  input.style.cssText = 'flex:1;padding:9px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;';
+  const moveBtn = document.createElement('button');
+  moveBtn.className = 'btn btn-accent';
+  moveBtn.style.cssText = 'font-size:13px;padding:9px 14px;white-space:nowrap;';
+  moveBtn.textContent = 'Move';
+  moveBtn.onclick = function() {
+    const val = input.value.trim();
+    if (!val) return;
+    moveSessionToSubject(sessionId, val);
+    modal.remove();
+  };
+  input.onkeydown = function(e) { if (e.key === 'Enter') moveBtn.click(); };
+  inputRow.appendChild(input);
+  inputRow.appendChild(moveBtn);
+  box.appendChild(inputRow);
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.style.cssText = 'margin-top:12px;width:100%;background:transparent;border:none;color:var(--text3);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function() { modal.remove(); };
+  box.appendChild(cancelBtn);
+
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+}
+
+function moveSessionToSubject(sessionId, newSubject) {
+  const sessions = getSessions();
+  const session = sessions.find(function(s) { return s.id === sessionId; });
+  if (!session) return;
+  session.subject = newSubject;
+  saveSessions(sessions);
+  renderSessionsTree();
+  renderSessionsPage();
+  renderSubjectsPage();
+  renderRecentSessions();
 }
 
 function copyNotes() {
