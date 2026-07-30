@@ -1076,7 +1076,14 @@
     <div class="page" id="page-subjects">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
         <p style="font-size:13px;color:var(--text2)">Organize your recordings by class or subject</p>
-        <button class="btn btn-accent" style="font-size:12px;padding:7px 14px;" onclick="addSubject()">+ New subject</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="subjects-sort" onchange="renderSubjectsPage()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:12px;padding:7px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;cursor:pointer;">
+            <option value="recent">Most recent</option>
+            <option value="az">A–Z</option>
+            <option value="count">Most recordings</option>
+          </select>
+          <button class="btn btn-accent" style="font-size:12px;padding:7px 14px;" onclick="addSubject()">+ New subject</button>
+        </div>
       </div>
       <div id="subjects-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
       </div>
@@ -2310,6 +2317,7 @@ function confirmSaveSession(subject, notes) {
   const now = new Date();
   const session = {
     id: 'session_' + Date.now(),
+    timestamp: Date.now(),
     title: notes.title || 'Recording',
     subject: subject || notes.subject || 'General',
     speaker: notes.speaker || null,
@@ -2581,7 +2589,29 @@ function renderSubjectsPage() {
   });
   const emojis = {'Golf':'⛳','Biology':'🧬','Biology 101':'🧬','CS':'💻','Math':'🧮','History':'🏛️','Psychology':'🧠','Chemistry':'⚗️','General':'📁','Physics':'⚛️','English':'📝','Economics':'📈'};
   grid.innerHTML = '';
-  const subjectNames = Object.keys(subjectMap);
+  const sortSelect = document.getElementById('subjects-sort');
+  const sortBy = sortSelect ? sortSelect.value : 'recent';
+  let subjectNames = Object.keys(subjectMap);
+
+  if (sortBy === 'az') {
+    subjectNames.sort(function(a, b) { return a.localeCompare(b); });
+  } else if (sortBy === 'count') {
+    subjectNames.sort(function(a, b) { return subjectMap[b].length - subjectMap[a].length; });
+  } else {
+    // Most recent - sort by the latest recording's timestamp in each subject
+    // Falls back to parsing the id (session_<timestamp>) for older sessions without a timestamp field
+    const getTime = function(s) {
+      if (s.timestamp) return s.timestamp;
+      const match = (s.id || '').match(/session_(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+    subjectNames.sort(function(a, b) {
+      const aLatest = Math.max.apply(null, subjectMap[a].map(getTime));
+      const bLatest = Math.max.apply(null, subjectMap[b].map(getTime));
+      return bLatest - aLatest;
+    });
+  }
+
   if (subjectNames.length === 0) {
     const empty = document.createElement('div');
     empty.style.cssText = 'grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);font-size:14px;';
