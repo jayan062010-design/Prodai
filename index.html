@@ -1968,7 +1968,7 @@ function showPage(name) {
   const titles = { record: 'Record', sessions: 'Sessions', notes: 'Notes', settings: 'Settings', profile: 'Profile', upgrade: 'Upgrade', subjects: 'Subjects' };
   if (name === 'subjects') renderSubjectsPage();
   document.getElementById('page-title').textContent = titles[name] || name;
-  const navMap = { record: 0, sessions: 1, notes: 2 };
+  const navMap = { record: 0, subjects: 1, sessions: 2 };
   if (navMap[name] !== undefined) document.querySelectorAll('.nav-item')[navMap[name]]?.classList.add('active');
 }
 
