@@ -1642,7 +1642,7 @@ async function requestMicOnce() {
 function renderRecentSessions() {
   const container = document.getElementById('recent-sessions-list');
   if (!container) return;
-  const sessions = getSessions().slice(0, 4);
+  const sessions = getSessions().filter(function(s) { return !s.archived; }).slice(0, 4);
   if (!sessions.length) {
     container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">No recordings yet — hit the mic to start!</div>';
     return;
@@ -1755,12 +1755,14 @@ function deleteSession(id) {
   saveSessions(sessions);
   renderSessionsTree();
   renderSessionsPage();
+  renderSubjectsPage();
+  renderRecentSessions();
 }
 
 function renderSessionsTree() {
   const tree = document.getElementById('nav-sessions-tree');
   if (!tree) return;
-  const sessions = getSessions();
+  const sessions = getSessions().filter(function(s) { return !s.archived; });
   tree.innerHTML = '<p class="nav-label">Recent</p>';
   if (!sessions.length) {
     const empty = document.createElement('p');
@@ -1814,14 +1816,57 @@ function renderSessionsTree() {
   });
 }
 
+function buildSessionRow(s) {
+  const item = document.createElement('div');
+  item.className = 'session-item';
+  item.style.cssText = 'cursor:pointer;' + (s.archived ? 'opacity:0.55;' : '');
+  item.onclick = function() { openSession(s.id); };
+  const icon = document.createElement('div');
+  icon.className = 'session-icon ' + (s.type === 'online' ? 'online' : 'inperson');
+  icon.textContent = s.type === 'online' ? '📹' : '🎙️';
+  const body = document.createElement('div');
+  body.className = 'session-body';
+  const title = document.createElement('p');
+  title.className = 'session-title';
+  title.textContent = s.title;
+  const meta = document.createElement('div');
+  meta.className = 'session-meta';
+  meta.innerHTML = '<span>' + s.dateFull + '</span><span>' + s.duration + '</span>' +
+    (s.speaker ? '<span class="speaker-badge">' + s.speaker + '</span>' : '');
+  body.appendChild(title);
+  body.appendChild(meta);
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0;';
+  const tag = document.createElement('span');
+  tag.className = 'tag tag-purple';
+  tag.textContent = s.archived ? 'Archived' : 'Notes ready';
+  const menuBtn = document.createElement('div');
+  menuBtn.style.cssText = 'padding:4px 8px;border-radius:5px;cursor:pointer;color:var(--text3);font-size:15px;font-weight:700;line-height:1;';
+  menuBtn.textContent = '⋮';
+  menuBtn.title = 'More options';
+  menuBtn.onclick = function(e) {
+    e.stopPropagation();
+    showSessionMenu(s.id, menuBtn);
+  };
+  right.appendChild(tag);
+  right.appendChild(menuBtn);
+  item.appendChild(icon);
+  item.appendChild(body);
+  item.appendChild(right);
+  return item;
+}
+
 function renderSessionsPage() {
   const container = document.getElementById('sessions-list-container');
   if (!container) return;
-  const sessions = getSessions();
-  if (!sessions.length) {
+  const allSessions = getSessions();
+  if (!allSessions.length) {
     container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3);font-size:14px;">No recordings yet. Hit record to get started!</div>';
     return;
   }
+  const sessions = allSessions.filter(function(s) { return !s.archived; });
+  const archivedSessions = allSessions.filter(function(s) { return s.archived; });
+
   const grouped = {};
   sessions.forEach(function(s) {
     const subj = s.subject || 'General';
@@ -1829,6 +1874,14 @@ function renderSessionsPage() {
     grouped[subj].push(s);
   });
   container.innerHTML = '';
+
+  if (!sessions.length && archivedSessions.length) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;padding:20px;color:var(--text3);font-size:14px;';
+    empty.textContent = 'All recordings are archived.';
+    container.appendChild(empty);
+  }
+
   Object.entries(grouped).forEach(function(entry) {
     const subj = entry[0];
     const items = entry[1];
@@ -1840,57 +1893,24 @@ function renderSessionsPage() {
     section.appendChild(label);
     const list = document.createElement('div');
     list.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
-    items.forEach(function(s) {
-      const item = document.createElement('div');
-      item.className = 'session-item';
-      item.style.cssText = 'cursor:pointer;';
-      item.onclick = function() { openSession(s.id); };
-      const icon = document.createElement('div');
-      icon.className = 'session-icon ' + (s.type === 'online' ? 'online' : 'inperson');
-      icon.textContent = s.type === 'online' ? '📹' : '🎙️';
-      const body = document.createElement('div');
-      body.className = 'session-body';
-      const title = document.createElement('p');
-      title.className = 'session-title';
-      title.textContent = s.title;
-      const meta = document.createElement('div');
-      meta.className = 'session-meta';
-      meta.innerHTML = '<span>' + s.dateFull + '</span><span>' + s.duration + '</span>' +
-        (s.speaker ? '<span class="speaker-badge">' + s.speaker + '</span>' : '');
-      body.appendChild(title);
-      body.appendChild(meta);
-      const right = document.createElement('div');
-      right.style.cssText = 'display:flex;align-items:center;gap:8px;flex-shrink:0;';
-      const tag = document.createElement('span');
-      tag.className = 'tag tag-purple';
-      tag.textContent = 'Notes ready';
-      const move = document.createElement('div');
-      move.style.cssText = 'padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--text3);font-size:12px;';
-      move.textContent = '📁';
-      move.title = 'Move to subject';
-      move.onclick = function(e) {
-        e.stopPropagation();
-        showMoveSubjectPicker(s.id);
-      };
-      const del = document.createElement('div');
-      del.style.cssText = 'padding:4px 6px;border-radius:5px;cursor:pointer;color:var(--text3);font-size:11px;';
-      del.textContent = '✕';
-      del.title = 'Delete';
-      del.onclick = function(e) {
-        e.stopPropagation();
-        deleteSession(s.id);
-      };
-      right.appendChild(tag);
-      right.appendChild(move);
-      right.appendChild(del);
-      item.appendChild(icon);
-      item.appendChild(body);
-      item.appendChild(right);
-      list.appendChild(item);
-    });
+    items.forEach(function(s) { list.appendChild(buildSessionRow(s)); });
     section.appendChild(list);
     container.appendChild(section);
   });
+
+  if (archivedSessions.length) {
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-bottom:24px;border-top:1px solid var(--border);padding-top:20px;';
+    const label = document.createElement('p');
+    label.style.cssText = 'font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;';
+    label.textContent = 'Archived';
+    section.appendChild(label);
+    const list = document.createElement('div');
+    list.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+    archivedSessions.forEach(function(s) { list.appendChild(buildSessionRow(s)); });
+    section.appendChild(list);
+    container.appendChild(section);
+  }
 }
 
 function openSession(id) {
@@ -2589,7 +2609,7 @@ async function sendChatMessage() {
 function renderSubjectsPage() {
   const grid = document.getElementById('subjects-grid');
   if (!grid) return;
-  const sessions = getSessions();
+  const sessions = getSessions().filter(function(s) { return !s.archived; });
   const subjectMap = {};
   sessions.forEach(function(s) {
     const subj = s.subject || 'General';
@@ -2810,6 +2830,112 @@ function moveSessionToSubject(sessionId, newSubject) {
   const session = sessions.find(function(s) { return s.id === sessionId; });
   if (!session) return;
   session.subject = newSubject;
+  saveSessions(sessions);
+  renderSessionsTree();
+  renderSessionsPage();
+  renderSubjectsPage();
+  renderRecentSessions();
+}
+
+function showSessionMenu(sessionId, anchorEl) {
+  const existing = document.getElementById('session-dropdown-menu');
+  if (existing) existing.remove();
+
+  const rect = anchorEl.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'session-dropdown-menu';
+  menu.style.cssText = 'position:fixed;top:' + (rect.bottom + 4) + 'px;left:' + Math.max(8, rect.right - 160) + 'px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;overflow:hidden;z-index:1000;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+
+  const sessions = getSessions();
+  const session = sessions.find(function(s) { return s.id === sessionId; });
+  const isArchived = session && session.archived;
+
+  const items = [
+    { label: 'Rename', action: function() { renameSession(sessionId); } },
+    { label: 'Move to...', action: function() { showMoveSubjectPicker(sessionId); } },
+    { label: isArchived ? 'Unarchive' : 'Archive', action: function() { toggleArchiveSession(sessionId); } },
+    { label: 'Delete', danger: true, action: function() { deleteSession(sessionId); } },
+  ];
+
+  items.forEach(function(it, i) {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:10px 14px;font-size:13px;cursor:pointer;color:' + (it.danger ? 'var(--red)' : 'var(--text2)') + ';' + (i > 0 ? 'border-top:1px solid var(--border);' : '');
+    row.textContent = it.label;
+    row.onmouseover = function() { this.style.background = 'var(--bg4)'; };
+    row.onmouseout = function() { this.style.background = ''; };
+    row.onclick = function(e) {
+      e.stopPropagation();
+      menu.remove();
+      it.action();
+    };
+    menu.appendChild(row);
+  });
+
+  document.body.appendChild(menu);
+
+  // Close when clicking elsewhere
+  setTimeout(function() {
+    document.addEventListener('click', function closeMenu() {
+      const m = document.getElementById('session-dropdown-menu');
+      if (m) m.remove();
+      document.removeEventListener('click', closeMenu);
+    });
+  }, 0);
+}
+
+function renameSession(sessionId) {
+  const sessions = getSessions();
+  const session = sessions.find(function(s) { return s.id === sessionId; });
+  if (!session) return;
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:999;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:28px;width:340px;max-width:90vw;';
+  const title = document.createElement('h3');
+  title.style.cssText = 'font-family:Syne,sans-serif;font-size:17px;font-weight:700;margin-bottom:14px;color:var(--text);';
+  title.textContent = 'Rename recording';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = session.title || '';
+  input.style.cssText = 'width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:13px;font-family:DM Sans,sans-serif;margin-bottom:16px;outline:none;';
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;gap:8px;';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn btn-ghost';
+  cancelBtn.style.cssText = 'flex:1;font-size:13px;padding:10px;';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = function() { modal.remove(); };
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-accent';
+  saveBtn.style.cssText = 'flex:1;font-size:13px;padding:10px;';
+  saveBtn.textContent = 'Save';
+  saveBtn.onclick = function() {
+    const newTitle = input.value.trim();
+    if (!newTitle) { input.focus(); return; }
+    session.title = newTitle;
+    saveSessions(sessions);
+    renderSessionsTree();
+    renderSessionsPage();
+    renderRecentSessions();
+    modal.remove();
+  };
+  input.onkeydown = function(e) { if (e.key === 'Enter') saveBtn.click(); };
+  btnRow.appendChild(cancelBtn);
+  btnRow.appendChild(saveBtn);
+  box.appendChild(title);
+  box.appendChild(input);
+  box.appendChild(btnRow);
+  modal.appendChild(box);
+  document.body.appendChild(modal);
+  setTimeout(function() { input.focus(); input.select(); }, 50);
+}
+
+function toggleArchiveSession(sessionId) {
+  const sessions = getSessions();
+  const session = sessions.find(function(s) { return s.id === sessionId; });
+  if (!session) return;
+  session.archived = !session.archived;
   saveSessions(sessions);
   renderSessionsTree();
   renderSessionsPage();
