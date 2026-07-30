@@ -1079,6 +1079,1087 @@
         <button class="btn btn-accent" style="font-size:12px;padding:7px 14px;" onclick="addSubject()">+ New subject</button>
       </div>
       <div id="subjects-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+      </div>TYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prod.ai</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #181818;
+    --bg4: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f5f5f5;
+    --text2: #999999;
+    --text3: #555555;
+    --accent: #f07060;
+    --accent2: #e05540;
+    --accent-glow: rgba(240,112,96,0.15);
+    --green: #2dce89;
+    --green-dim: rgba(45,206,137,0.12);
+    --red: #f07060;
+    --red-dim: rgba(240,112,96,0.12);
+    --amber: #fbbf24;
+    --amber-dim: rgba(251,191,36,0.12);
+    --pink: #f472b6;
+    --pink-dim: rgba(244,114,182,0.12);
+    --blue: #f07060;
+    --blue-dim: rgba(240,112,96,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: radial-gradient(ellipse at 20% 20%, rgba(240,112,96,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(240,112,96,0.04) 0%, transparent 50%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    min-height: 100vh;
+    background: #111111;
+    border-right: 1px solid rgba(240,112,96,0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .logo {
+    padding: 22px 20px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #f07060, #e05540);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 16px rgba(240,112,96,0.4);
+  }
+  .logo-icon svg { width: 17px; height: 17px; }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+  .logo-text span { color: var(--accent); }
+
+  .nav { padding: 12px 10px; flex: 1; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 0 10px;
+    margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(240,112,96,0.2), rgba(240,112,96,0.08));
+    color: var(--accent);
+    border-color: rgba(240,112,96,0.3);
+  }
+  .nav-item svg { width: 15px; height: 15px; opacity: 0.8; flex-shrink: 0; }
+  .nav-item.active svg { opacity: 1; }
+  .nav-subject {
+    margin: 2px 0;
+  }
+  .nav-subject-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .nav-subject-header:hover { background: var(--bg3); color: var(--text); }
+  .nav-subject-header .chevron { width: 10px; height: 10px; margin-left: auto; transition: transform 0.2s; flex-shrink: 0; }
+  .nav-subject-header.open .chevron { transform: rotate(90deg); }
+  .nav-subject-sessions { padding-left: 28px; display: none; }
+  .nav-subject-sessions.open { display: block; }
+  .nav-session-item {
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-left: 1px solid var(--border);
+    margin: 1px 0;
+  }
+  .nav-session-item:hover { color: var(--text); background: var(--bg3); }
+
+  .sidebar-bottom {
+    padding: 12px 10px;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-chip:hover { background: var(--bg3); }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #f07060, #e05540);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: white; flex-shrink: 0;
+  }
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .user-plan { font-size: 11px; color: var(--text3); }
+
+  /* MAIN */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .topbar {
+    padding: 16px 28px;
+    border-bottom: 1px solid rgba(240,112,96,0.15);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg);
+  }
+  .topbar-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .topbar-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { background: var(--bg3); color: var(--text); }
+  .btn-accent {
+    background: linear-gradient(135deg, #f07060, #f07060);
+    color: white;
+    box-shadow: 0 2px 12px rgba(240,112,96,0.35);
+  }
+  .btn-accent:hover { background: linear-gradient(135deg, #f07060, #f07060); box-shadow: 0 4px 16px rgba(240,112,96,0.5); }
+
+  .content { padding: 28px; flex: 1; overflow-y: auto; }
+
+  /* RECORD PANEL */
+  .record-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .record-panel::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(240,112,96,0.18) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .record-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(240,112,96,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .record-tabs {
+    display: flex; gap: 4px;
+    background: var(--bg3);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    width: fit-content;
+  }
+  .record-tab {
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .record-tab svg { width: 13px; height: 13px; }
+  .record-tab.active {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+
+  /* IN-PERSON RECORDING */
+  .inperson-area { display: flex; align-items: center; gap: 28px; }
+  .record-btn-wrap { position: relative; flex-shrink: 0; }
+  .record-ring {
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    border: 2px solid var(--red);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s;
+  }
+  .record-ring.active {
+    opacity: 0.6;
+    animation: ring-pulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255,77,109,0.4);
+  }
+  @keyframes ring-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.15); opacity: 0.15; }
+  }
+  .record-btn-main {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #111111, #141424);
+    border: 2px solid rgba(248,113,113,0.3);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 0 rgba(248,113,113,0);
+  }
+  .record-btn-main:hover {
+    border-color: var(--red);
+    background: var(--red-dim);
+    box-shadow: 0 0 20px rgba(248,113,113,0.2);
+  }
+  .record-btn-main.recording {
+    background: var(--red-dim);
+    border-color: var(--red);
+    box-shadow: 0 0 24px rgba(248,113,113,0.3);
+  }
+  .record-btn-main svg { width: 26px; height: 26px; transition: all 0.2s; }
+
+  .record-info { flex: 1; }
+  .record-status {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .record-sub { font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+  .record-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .meta-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .meta-chip svg { width: 12px; height: 12px; }
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--red);
+  }
+
+  /* LIVE WAVEFORM */
+  .waveform {
+    display: flex; align-items: center; gap: 3px;
+    height: 32px;
+    margin-top: 16px;
+  }
+  .wave-bar {
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--pink), var(--accent));
+    opacity: 0.4;
+    transition: height 0.1s;
+  }
+  .wave-bar.active { opacity: 0.8; animation: wave var(--d, 0.8s) ease-in-out infinite alternate; }
+  @keyframes wave { from { height: 4px; } to { height: var(--h, 20px); } }
+
+  /* ONLINE MEETING SECTION */
+  .meeting-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .meeting-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .meeting-card:hover { border-color: var(--border2); background: var(--bg4); }
+  .meeting-card.connected { border-color: rgba(45,206,137,0.3); }
+  .meeting-logo { font-size: 24px; margin-bottom: 8px; }
+  .meeting-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .meeting-status { font-size: 11px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .status-dot.connected { background: var(--green); }
+  .status-dot.disconnected { background: var(--text3); }
+
+  .auto-record-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .toggle-left { display: flex; align-items: center; gap: 10px; }
+  .toggle-icon {
+    width: 34px; height: 34px;
+    background: var(--accent-glow);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .toggle-icon svg { width: 16px; height: 16px; color: var(--accent); }
+  .toggle-label { font-size: 14px; font-weight: 500; }
+  .toggle-sub { font-size: 12px; color: var(--text2); }
+  .switch {
+    width: 42px; height: 24px;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .switch.on { background: var(--accent); border-color: var(--accent); }
+  .switch-thumb {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    transition: transform 0.2s;
+  }
+  .switch.on .switch-thumb { transform: translateX(18px); }
+
+  /* SESSIONS LIST */
+  .sessions-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .sessions-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px; font-weight: 700;
+  }
+  .session-list { display: flex; flex-direction: column; gap: 8px; }
+  .session-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .session-item:hover { border-color: rgba(240,112,96,0.3); background: var(--bg3); box-shadow: 0 0 0 1px rgba(240,112,96,0.1); }
+  .session-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .session-icon.inperson { background: var(--red-dim); }
+  .session-icon.online { background: rgba(45,206,137,0.1); }
+  .session-body { flex: 1; min-width: 0; }
+  .session-title { font-size: 14px; font-weight: 500; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .session-meta { font-size: 12px; color: var(--text2); display: flex; gap: 10px; }
+  .session-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .tag {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-purple { background: rgba(240,112,96,0.2); color: var(--accent); border: 1px solid rgba(240,112,96,0.25); }
+  .tag-green { background: rgba(0,229,160,0.15); color: var(--green); border: 1px solid rgba(0,229,160,0.25); }
+
+  /* SPEAKER BADGE */
+  .speaker-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px;
+    background: var(--amber-dim);
+    border: 1px solid rgba(255,140,66,0.25);
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--amber);
+  }
+  .speaker-badge svg { width: 10px; height: 10px; }
+
+  /* NOTES PREVIEW */
+  .notes-preview {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+  .notes-preview h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text3);
+  }
+  .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.3; }
+  .empty-state p { font-size: 14px; }
+
+  .pmenu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .pmenu-item:hover { background: var(--bg4); color: var(--text); }
+  .pmenu-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+  /* PAGE VIEWS */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* LIVE TRANSCRIPT PANEL */
+  .live-transcript {
+    background: var(--bg3);
+    border: 1px solid rgba(245,54,92,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .transcript-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .live-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: var(--red);
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: blink 1s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(255,77,109,0.6);
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .transcript-body { font-size: 13px; line-height: 1.7; color: var(--text2); }
+  .transcript-speaker { color: var(--amber); font-weight: 500; }
+  .transcript-line { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <img src="logo.png" style="width:32px;height:32px;border-radius:9px;object-fit:cover;flex-shrink:0;">
+    <span class="logo-text">Prod<span style="color:var(--accent);">.ai</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">
+      <div class="nav-item active" onclick="showPage('record')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+        Record
+      </div>
+      <div class="nav-item" onclick="showPage('notes')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+        Notes
+      </div>
+      <div class="nav-item" onclick="showPage('subjects')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Subjects
+      </div>
+      <div class="nav-item" onclick="showPage('sessions')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        History
+      </div>
+    </div>
+
+    <!-- Sessions grouped by subject — rendered dynamically -->
+    <div class="nav-section" id="nav-sessions-tree">
+      <p class="nav-label">Recent</p>
+      <p style="font-size:12px;color:var(--text3);padding:4px 10px;">No recordings yet</p>
+    </div>
+  </nav>
+
+  <div class="sidebar-bottom" style="position:relative;">
+    <div class="user-chip" onclick="toggleProfileMenu(event)">
+      <div class="avatar">J</div>
+      <div class="user-info">
+        <p class="user-name">Jayan</p>
+        <p class="user-plan">Free plan</p>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--text3);flex-shrink:0;margin-left:auto;"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div id="profile-menu" style="display:none;position:absolute;bottom:56px;left:10px;right:10px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;overflow:hidden;z-index:100;box-shadow:0 -8px 24px rgba(0,0,0,0.4);">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <div class="avatar" style="width:32px;height:32px;font-size:12px;">J</div>
+        <div><p style="font-size:13px;font-weight:500;">Jayan</p><p style="font-size:11px;color:var(--text3);">Free plan</p></div>
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu();showPage('profile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Account settings
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu();showPage('upgrade')" style="color:var(--accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Upgrade plan
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu();showPage('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help center
+      </div>
+      <div class="pmenu-item" onclick="closeProfileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact support
+      </div>
+      <div class="pmenu-item" style="color:var(--red);border-top:1px solid var(--border);" onclick="closeProfileMenu()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log out
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="topbar">
+    <h1 class="topbar-title" id="page-title">Record</h1>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="showPage('settings')">Settings</button>
+      <button class="btn btn-accent" onclick="showPage('upgrade')">Upgrade</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- RECORD PAGE -->
+    <div class="page active" id="page-record">
+
+      <div class="record-panel">
+        <div class="record-tabs">
+          <button class="record-tab active" id="tab-inperson" onclick="switchRecordTab('inperson')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            In-Person
+          </button>
+          <button class="record-tab" id="tab-online" onclick="switchRecordTab('online')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.723v6.554a1 1 0 0 1-1.447.894L15 14"/><rect x="3" y="8" width="12" height="8" rx="2"/></svg>
+            Online Meeting
+          </button>
+        </div>
+
+        <!-- IN-PERSON TAB -->
+        <div id="inperson-tab">
+
+          <!-- Recording mode -->
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <div id="mode-normal" onclick="setRecordMode('normal')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-glow);cursor:pointer;text-align:center;transition:all 0.15s;">
+              <p style="font-size:13px;font-weight:600;color:var(--accent);">Normal</p>
+              <p style="font-size:11px;color:var(--text3);margin-top:2px;">Next to speaker</p>
+            </div>
+            <div id="mode-distant" onclick="setRecordMode('distant')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;cursor:pointer;text-align:center;transition:all 0.15s;">
+              <p style="font-size:13px;font-weight:600;color:var(--text2);">Distant</p>
+              <p style="font-size:11px;color:var(--text3);margin-top:2px;">5–15 ft away</p>
+            </div>
+            <div id="mode-lecture-hall" onclick="setRecordMode('lecture-hall')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;cursor:pointer;text-align:center;transition:all 0.15s;">
+              <p style="font-size:13px;font-weight:600;color:var(--text2);">Lecture Hall</p>
+              <p style="font-size:11px;color:var(--text3);margin-top:2px;">Large room</p>
+            </div>
+          </div>
+
+          <!-- Language settings inline -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.06em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Spoken language</p>
+              <select id="record-spoken-lang" onchange="onRecordLangChange()" style="width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+                <option value="en-US">🇺🇸 English (US)</option>
+                <option value="en-GB">🇬🇧 English (UK)</option>
+                <option value="es-ES">🇪🇸 Spanish</option>
+                <option value="fr-FR">🇫🇷 French</option>
+                <option value="de-DE">🇩🇪 German</option>
+                <option value="it-IT">🇮🇹 Italian</option>
+                <option value="pt-BR">🇧🇷 Portuguese</option>
+                <option value="zh-CN">🇨🇳 Mandarin</option>
+                <option value="ja-JP">🇯🇵 Japanese</option>
+                <option value="ko-KR">🇰🇷 Korean</option>
+                <option value="ar-SA">🇸🇦 Arabic</option>
+                <option value="hi-IN">🇮🇳 Hindi</option>
+                <option value="ru-RU">🇷🇺 Russian</option>
+              </select>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+              <p style="font-size:10px;font-weight:600;letter-spacing:0.06em;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Notes in</p>
+              <select id="record-output-lang" onchange="onRecordLangChange()" style="width:100%;background:transparent;border:none;color:var(--text);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;">
+                <option value="English">English</option>
+                <option value="Spanish">Spanish</option>
+                <option value="French">French</option>
+                <option value="German">German</option>
+                <option value="Italian">Italian</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Mandarin Chinese">Mandarin Chinese</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Russian">Russian</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inperson-area">
+            <div class="record-btn-wrap">
+              <div class="record-ring" id="record-ring"></div>
+              <div class="record-btn-main" id="record-btn" onclick="toggleRecord()">
+                <svg id="mic-icon" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                <svg id="stop-icon" style="display:none" viewBox="0 0 24 24" fill="var(--red)" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+              </div>
+            </div>
+            <div class="record-info">
+              <p class="record-status" id="record-status">Ready to record</p>
+              <p class="record-sub" id="record-sub">Tap the mic to start capturing your lecture</p>
+              <div id="usage-badge" style="display:none;margin-top:6px;font-size:11px;padding:3px 10px;background:var(--amber-dim);color:var(--amber);border-radius:99px;border:1px solid rgba(251,191,36,0.2);width:fit-content;"></div>
+              <div class="record-meta">
+                <div class="meta-chip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  <span class="timer" id="timer">00:00</span>
+                </div>
+                <div class="meta-chip" id="speaker-chip" style="display:none">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <span style="color:var(--amber);font-size:12px">Lecturer detected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="waveform" id="waveform">
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+            <div class="wave-bar" style="height:4px"></div>
+          </div>
+
+          <div class="live-transcript" id="live-transcript" style="display:none">
+            <div class="transcript-header">
+              <span class="live-label"><span class="live-dot"></span>Live transcript</span>
+              <span style="font-size:11px;color:var(--text3)">Auto-detecting speakers...</span>
+            </div>
+            <div class="transcript-body" id="transcript-body">
+              <div class="transcript-line"><span class="transcript-speaker">Prof. Chen · </span>Today we're going to continue with Chapter 4, covering the cell cycle and mitosis...</div>
+              <div class="transcript-line" style="color:var(--text3)">Student · Can you go over the G1 checkpoint again?</div>
+              <div class="transcript-line"><span class="transcript-speaker">Prof. Chen · </span>Good question. The G1 checkpoint is where the cell assesses whether conditions are right to proceed...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ONLINE MEETING TAB -->
+        <div id="online-tab" style="display:none">
+
+          <!-- Step 1: Capture method -->
+          <div style="margin-bottom:16px;">
+            <p style="font-size:11px;font-weight:600;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;">Capture method</p>
+            <div style="display:flex;gap:8px;">
+              <div id="capture-tab" onclick="setCaptureMethod('tab')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-glow);cursor:pointer;text-align:center;transition:all 0.15s;">
+                <p style="font-size:13px;font-weight:600;color:var(--accent);">Tab capture</p>
+                <p style="font-size:11px;color:var(--text3);margin-top:2px;">Works with any platform</p>
+              </div>
+              <div id="capture-integration" onclick="setCaptureMethod('integration')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;cursor:pointer;text-align:center;transition:all 0.15s;position:relative;">
+                <p style="font-size:13px;font-weight:600;color:var(--text2);">Direct integration</p>
+                <p style="font-size:11px;color:var(--text3);margin-top:2px;">Auto-joins your calls</p>
+                <span style="position:absolute;top:-8px;right:8px;font-size:9px;padding:2px 6px;background:var(--accent-glow);color:var(--accent);border-radius:99px;font-weight:600;">COMING SOON</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab capture instructions -->
+          <div id="tab-capture-section">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+              <p style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px;">How to record your meeting:</p>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">1</span>
+                  <p style="font-size:13px;color:var(--text2);">Join your Zoom, Meet, or Teams call in another tab</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">2</span>
+                  <p style="font-size:13px;color:var(--text2);">Click <strong style="color:var(--text);">Start capturing</strong> below — Chrome will ask you to share a tab</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">3</span>
+                  <p style="font-size:13px;color:var(--text2);">Select your meeting tab and make sure <strong style="color:var(--text);">Share tab audio</strong> is checked</p>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                  <span style="min-width:20px;height:20px;border-radius:50%;background:var(--accent-glow);color:var(--accent);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;">4</span>
+                  <p style="font-size:13px;color:var(--text2);">AURA transcribes everything in real time — stop when done</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Capture button -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <div class="record-btn-wrap" style="flex-shrink:0;">
+                <div class="record-ring" id="online-record-ring"></div>
+                <div class="record-btn-main" id="online-record-btn" onclick="toggleOnlineRecord()" style="width:56px;height:56px;">
+                  <svg id="online-play-icon" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round"><path d="M15 10l4.553-2.276A1 1 0 0 1 21 8.723v6.554a1 1 0 0 1-1.447.894L15 14"/><rect x="3" y="8" width="12" height="8" rx="2"/></svg>
+                  <svg id="online-stop-icon" style="display:none" viewBox="0 0 24 24" fill="var(--red)" stroke="none"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                </div>
+              </div>
+              <div>
+                <p style="font-size:14px;font-weight:500;" id="online-status">Ready to capture</p>
+                <p style="font-size:12px;color:var(--text2);" id="online-sub">Click to share your meeting tab</p>
+              </div>
+              <span class="timer" id="online-timer" style="display:none;margin-left:auto;">00:00</span>
+            </div>
+
+            <!-- Live transcript for online -->
+            <div class="live-transcript" id="online-live-transcript" style="display:none;">
+              <div class="transcript-header">
+                <span class="live-label"><span class="live-dot"></span>Live transcript</span>
+                <span style="font-size:11px;color:var(--text3);">Detecting speakers...</span>
+              </div>
+              <div class="transcript-body" id="online-transcript-body">
+                <span style="color:var(--text3);font-style:italic;font-size:13px;">Listening to meeting audio...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Direct integration section (coming soon) -->
+          <div id="integration-section" style="display:none;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="meeting-card" style="opacity:0.5;cursor:default;">
+                <div class="meeting-logo">🎥</div>
+                <p class="meeting-name">Zoom</p>
+                <p class="meeting-status"><span style="font-size:11px;color:var(--text3);">Coming soon</span></p>
+              </div>
+              <div class="meeting-card" style="opacity:0.5;cursor:default;">
+                <div class="meeting-logo">📹</div>
+                <p class="meeting-name">Google Meet</p>
+                <p class="meeting-status"><span style="font-size:11px;color:var(--text3);">Coming soon</span></p>
+              </div>
+              <div class="meeting-card" style="opacity:0.5;cursor:default;">
+                <div class="meeting-logo">💼</div>
+                <p class="meeting-name">Microsoft Teams</p>
+                <p class="meeting-status"><span style="font-size:11px;color:var(--text3);">Coming soon</span></p>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--text3);margin-top:12px;text-align:center;">Direct integrations will auto-join and record your calls without any extra steps.</p>
+          </div>
+
+          <!-- Auto-record toggle -->
+          <div class="auto-record-toggle" style="margin-top:14px;">
+            <div class="toggle-left">
+              <div class="toggle-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+              </div>
+              <div>
+                <p class="toggle-label">Auto-record on join</p>
+                <p class="toggle-sub">Starts recording the moment you enter any connected call</p>
+              </div>
+            </div>
+            <div class="switch on" id="auto-toggle" onclick="toggleSwitch(this)">
+              <div class="switch-thumb"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT SESSIONS -->
+      <div class="sessions-header">
+        <h2 class="sessions-title">Recent sessions</h2>
+        <button class="btn btn-ghost" style="font-size:12px;padding:5px 12px" onclick="showPage('sessions')">View all</button>
+      </div>
+      <div id="recent-sessions-list">
+        <div style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">No recordings yet — hit the mic to start!</div>
+      </div>
+    </div>
+
+    <!-- SESSIONS PAGE -->
+    <div class="page" id="page-sessions">
+      <div id="sessions-list-container">
+        <div style="text-align:center;padding:40px;color:var(--text3);font-size:14px;">No recordings yet. Hit record to get started!</div>
+      </div>
+    </div>
+
+    <!-- NOTES PAGE -->
+    <div class="page" id="page-notes">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <span class="tag tag-purple">Biology 101</span>
+              <span class="speaker-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:10px;height:10px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Prof. Chen</span>
+            </div>
+            <h2 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:4px;">Cell Cycle & Mitosis</h2>
+            <p style="font-size:13px;color:var(--text2)">Today, 10:15 AM · 48 min · In-person</p>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:6px 12px">Export</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+            <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--accent)">7</p>
+            <p style="font-size:12px;color:var(--text2)">Key topics</p>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+            <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--green)">12</p>
+            <p style="font-size:12px;color:var(--text2)">Key terms</p>
+          </div>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+            <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--amber)">3</p>
+            <p style="font-size:12px;color:var(--text2)">Action items</p>
+          </div>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Summary</p>
+          <p style="font-size:14px;color:var(--text2);line-height:1.7;background:var(--bg3);border-radius:10px;padding:14px;border:1px solid var(--border);">Prof. Chen covered the cell cycle phases (G1, S, G2, M) with emphasis on checkpoint mechanisms. Key focus was on how cyclins regulate CDKs at the G1 and G2 checkpoints, and how errors trigger apoptosis. Mitosis stages were reviewed with diagrams.</p>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Key topics</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">01</span>Cell cycle phases: G1, S, G2, M phase</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">02</span>G1 and G2 checkpoint mechanisms</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">03</span>Cyclin-CDK regulation and cancer links</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:10px;"><span style="color:var(--accent);font-size:11px;font-weight:600;min-width:16px;">04</span>Stages of mitosis (PMAT)</div>
+          </div>
+        </div>
+
+        <div>
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Action items</p>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Review Chapter 4 diagrams before Friday's quiz
+            </div>
+            <div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Memorize cyclin names and their corresponding phases
+            </div>
+            <div style="background:var(--amber-dim);border:1px solid rgba(251,99,64,0.2);border-radius:8px;padding:11px 14px;font-size:13px;color:var(--text);display:flex;gap:10px;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+              Watch Khan Academy video on apoptosis (Prof. Chen recommended)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div style="max-width:560px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Recording</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg></div>
+                <div><p class="toggle-label">Auto-detect speakers</p><p class="toggle-sub">Label Lecturer and Student in transcript</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+                <div><p class="toggle-label">Show pause markers</p><p class="toggle-sub">Display ⏸ pause in transcript</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+                <div><p class="toggle-label">AI transcript correction</p><p class="toggle-sub">Fix context errors like "drawstring" → "draw swing"</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Notes</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                <div><p class="toggle-label">Auto-generate notes on stop</p><p class="toggle-sub">Immediately process notes when recording ends</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+            <div class="auto-record-toggle">
+              <div class="toggle-left">
+                <div class="toggle-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;color:var(--accent)"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M12 12h.01"/></svg></div>
+                <div><p class="toggle-label">Include full transcript in notes</p><p class="toggle-sub">Show raw transcript at bottom of notes page</p></div>
+              </div>
+              <div class="switch on" onclick="toggleSwitch(this)"><div class="switch-thumb"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Language</p>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div><p style="font-size:14px;font-weight:500;">Transcription language</p><p style="font-size:12px;color:var(--text2);">Language spoken in your lectures</p></div>
+            <select style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;">
+              <option>English (US)</option>
+              <option>English (UK)</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>Mandarin</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div class="page" id="page-profile">
+      <div style="max-width:560px;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+            <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#f07060);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:white;">J</div>
+            <div>
+              <p style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;">Jayan</p>
+              <p style="font-size:13px;color:var(--text2);">Free plan · Student</p>
+            </div>
+            <button class="btn btn-ghost" style="margin-left:auto;font-size:12px;padding:6px 14px;">Edit</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:13px;color:var(--text2);">Email</span>
+              <span style="font-size:13px;">jayan@email.com</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+              <span style="font-size:13px;color:var(--text2);">Account type</span>
+              <span style="font-size:13px;">Student</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;">
+              <span style="font-size:13px;color:var(--text2);">Member since</span>
+              <span style="font-size:13px;">March 2026</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;">
+          <p style="font-size:11px;font-weight:500;letter-spacing:0.07em;color:var(--text3);text-transform:uppercase;margin-bottom:14px;">Usage this month</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--accent)">4</p>
+              <p style="font-size:12px;color:var(--text2)">Recordings</p>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--green)">3.2h</p>
+              <p style="font-size:12px;color:var(--text2)">Recorded</p>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+              <p style="font-size:22px;font-weight:700;font-family:'Syne',sans-serif;color:var(--amber)">$0.12</p>
+              <p style="font-size:12px;color:var(--text2)">API cost</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBJECTS PAGE -->
+    <div class="page" id="page-subjects">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <p style="font-size:13px;color:var(--text2)">Organize your recordings by class or subject</p>
+        <button class="btn btn-accent" style="font-size:12px;padding:7px 14px;" onclick="addSubject()">+ New subject</button>
+      </div>
+      <div id="subjects-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
         <div class="subject-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='rgba(240,112,96,0.4)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
           <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:20px;">⛳</div>
           <p style="font-family:'Syne',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">Golf</p>
@@ -1912,7 +2993,8 @@ function showPage(name) {
   const page = document.getElementById('page-' + name);
   if (!page) return;
   page.classList.add('active');
-  const titles = { record: 'Record', sessions: 'Sessions', notes: 'Notes', settings: 'Settings', profile: 'Profile', upgrade: 'Upgrade' };
+  const titles = { record: 'Record', sessions: 'Sessions', notes: 'Notes', settings: 'Settings', profile: 'Profile', upgrade: 'Upgrade', subjects: 'Subjects' };
+  if (name === 'subjects') renderSubjectsPage();
   document.getElementById('page-title').textContent = titles[name] || name;
   const navMap = { record: 0, sessions: 1, notes: 2 };
   if (navMap[name] !== undefined) document.querySelectorAll('.nav-item')[navMap[name]]?.classList.add('active');
@@ -2587,6 +3669,47 @@ async function sendChatMessage() {
   }
 }
 
+function renderSubjectsPage() {
+  const grid = document.getElementById('subjects-grid');
+  if (!grid) return;
+  const sessions = getSessions();
+  const subjectMap = {};
+  sessions.forEach(s => {
+    const subj = s.subject || 'General';
+    if (!subjectMap[subj]) subjectMap[subj] = [];
+    subjectMap[subj].push(s);
+  });
+  const emojis = {'Golf':'⛳','Biology':'🧬','Biology 101':'🧬','CS':'💻','Math':'🧮','History':'🏛️','Psychology':'🧠','Chemistry':'⚗️','General':'📁','Physics':'⚛️','English':'📝','Economics':'📈'};
+  grid.innerHTML = '';
+  if (Object.keys(subjectMap).length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);font-size:14px;">No subjects yet — start recording to organize by subject!</div>';
+    return;
+  }
+  Object.entries(subjectMap).forEach(function(entry) {
+    const subj = entry[0];
+    const items = entry[1];
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all 0.15s;';
+    card.onmouseover = function() { this.style.borderColor = 'rgba(240,112,96,0.4)'; };
+    card.onmouseout = function() { this.style.borderColor = 'rgba(255,255,255,0.07)'; };
+    card.onclick = function() { showPage('sessions'); };
+    const icon = document.createElement('div');
+    icon.style.cssText = 'width:40px;height:40px;border-radius:10px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:20px;';
+    icon.textContent = emojis[subj] || '📁';
+    const name = document.createElement('p');
+    name.style.cssText = 'font-weight:600;font-size:14px;color:var(--text);margin-bottom:4px;';
+    name.textContent = subj;
+    const count = document.createElement('p');
+    count.style.cssText = 'font-size:12px;color:var(--text3);';
+    count.textContent = items.length + ' recording' + (items.length !== 1 ? 's' : '');
+    card.appendChild(icon);
+    card.appendChild(name);
+    card.appendChild(count);
+    grid.appendChild(card);
+  });
+}
+
 function copyNotes() {
   if (!checkLimit("exports", "exportsPerMonth")) {
     showUpgradePrompt("You've used your " + PLANS.free.exportsPerMonth + " free exports this month. Upgrade to Pro for unlimited exports.");
@@ -3118,6 +4241,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderSessionsTree();
   renderSessionsPage();
   renderRecentSessions();
+  renderSubjectsPage();
   loadLanguageSettings();
   showUsageBadge();
   enforcePlanUI();
