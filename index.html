@@ -2131,7 +2131,7 @@ async function processTranscript(transcript) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
         max_tokens: 8000,
         system: 'You are an expert lecture notes AI. Given a transcript, return ONLY valid JSON with no markdown, no extra text, no code fences. RULES: Write ALL text in ' + (localStorage.getItem('lectureapp_output_lang') || 'English') + '. Be as detailed as possible. Summary must be VERY detailed covering every major topic — 5-8 sentences minimum. detailedNotes must be thorough bullet points one per concept. Do NOT make up information. Return this exact JSON structure: {' +
           '"title": "descriptive title",' +
@@ -2621,7 +2621,7 @@ async function sendChatMessage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
         max_tokens: 1000,
         system: 'You are a helpful study assistant for Prod.ai. Answer questions about the lecture based on the notes and transcript. Be concise and clear. If the answer is not in the content say so.\n\nNOTES:\n' + context + '\n\nTRANSCRIPT:\n' + transcript,
         messages: [{ role: 'user', content: question }]
