@@ -2181,6 +2181,41 @@ function stopRecordingUI() {
   document.getElementById('speaker-chip').style.display = 'none';
 }
 
+// The model occasionally returns near-valid JSON (unescaped quotes / raw newlines in strings).
+// Parse strictly first, then repair and retry.
+function parseNotesJSON(raw) {
+  let text = raw.replace(/```json|```/g, '').trim();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('AI returned an unexpected response. Please try again.');
+  text = text.slice(start, end + 1);
+  try { return JSON.parse(text); } catch (e) { /* fall through to repair */ }
+
+  let out = '';
+  let inStr = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (!inStr) {
+      if (c === '"') inStr = true;
+      out += c;
+      continue;
+    }
+    if (c === '\\') { out += c + (text[i + 1] || ''); i++; continue; }
+    if (c === '"') {
+      const next = text.slice(i + 1).match(/^\s*(.)/);
+      const closes = !next || ',:}]'.includes(next[1]);
+      if (closes) { inStr = false; out += c; } else { out += '\\"'; }
+      continue;
+    }
+    if (c === '\n') { out += '\\n'; continue; }
+    if (c === '\r') { continue; }
+    if (c === '\t') { out += '\\t'; continue; }
+    out += c;
+  }
+  try { return JSON.parse(out); }
+  catch (e) { throw new Error('Could not read the AI notes (malformed response). Please try again.'); }
+}
+
 async function processTranscript(transcript) {
   const duration = formatTime(seconds);
   try {
@@ -2219,8 +2254,8 @@ async function processTranscript(transcript) {
     const notesData = await notesRes.json();
     if (notesData.error) throw new Error('Notes generation failed: ' + notesData.error.message);
 
-    const raw = notesData.content.map(b => b.text || '').join('').replace(/```json|```/g,'').trim();
-    const notes = JSON.parse(raw);
+    const raw = notesData.content.map(b => b.text || '').join('');
+    const notes = parseNotesJSON(raw);
     notes._transcript = transcript;
     window._lastNotes = notes;
     window._sessionsSubjectFilter = null; // fresh recording — Back should go to full History
